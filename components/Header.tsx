@@ -57,15 +57,22 @@ export default function Header({ menu, logo, logoText }: HeaderProps) {
         <div className="flex items-center justify-between h-16 lg:h-20">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            {logo ? (
-              <Image src={urlFor(logo).width(120).height(40).url()} alt="Logo" width={120} height={40} className="h-8 w-auto brightness-0 invert" />
-            ) : (
-              <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                {logoText || 'Quotify'}
-              </span>
-            )}
-          </Link>
+<Link href="/" className="flex items-center gap-2 flex-shrink-0">
+  {logo ? (
+    <Image 
+      src={urlFor(logo).width(240).height(80).url()} 
+      alt="Logo" 
+      width={240} 
+      height={80} 
+      className="h-16 w-auto"  // 👈 DOUBLE SIZE (h-8 → h-16)
+      // 👈 NO brightness-0 invert - red color dikhega
+    />
+  ) : (
+    <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+      {logoText || 'Quotify'}
+    </span>
+  )}
+</Link>
 
           {/* Desktop Navigation */}
           {navLinks.length > 0 && (
