@@ -9,37 +9,16 @@ import { client } from '@/lib/sanity';
 async function getSettings() {
   return client.fetch(`
     *[_type == "settings"][0] {
+      logo,
+      logoText,
       menu {
         links[] {
-          _key,
-          _type,
-          // Internal link
-          _type == "linkInternal" => {
-            label,
-            "link": reference->slug.current
-          },
-          // External link
-          _type == "linkExternal" => {
-            label,
-            url
-          }
+          _key, _type,
+          _type == "linkInternal" => { label, "link": reference->slug.current },
+          _type == "linkExternal" => { label, url }
         }
       },
-      footer {
-        links[] {
-          _key,
-          _type,
-          _type == "linkInternal" => {
-            label,
-            "link": reference->slug.current
-          },
-          _type == "linkExternal" => {
-            label,
-            url
-          }
-        },
-        text
-      }
+      footer { links[] { _key, _type, _type == "linkInternal" => { label, "link": reference->slug.current }, _type == "linkExternal" => { label, url } }, text }
     }
   `);
 }
@@ -59,9 +38,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans">
-        <Header 
-          menu={settings?.menu}
-        />
+        <Header menu={settings?.menu} logo={settings?.logo} logoText={settings?.logoText} />
         {children}
         <Footer 
           links={settings?.footer?.links}
