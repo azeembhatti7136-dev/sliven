@@ -5,6 +5,7 @@ import ToastProvider from '@/components/ToastProvider';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { client } from '@/lib/sanity';
+import FloatingButtons from '@/components/FloatingButtons';
 
 async function getSettings() {
   return client.fetch(`
@@ -45,6 +46,7 @@ export default async function RootLayout({
           text={settings?.footer?.text}
         />
         <ToastProvider />
+        <FloatingButtons />
       </body>
     </html>
   );
