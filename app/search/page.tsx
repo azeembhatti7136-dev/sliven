@@ -1,16 +1,22 @@
+// src/app/search/page.tsx
 import { client } from '@/lib/sanity';
 import ProductCard from '@/components/ProductCard';
 
 export const dynamic = 'force-dynamic';
 
 async function searchProducts(query: string) {
-  return client.fetch(`*[_type == "simpleProduct" && (title match $query || tags[] match $query || features[] match $query)] {
-    _id, title, slug, "image": images[0], "collection": collection->{_id, title, slug}, price, quoteSettings
-  }`, { query: `*${query}*` });
+  if (!query) return [];
+  return client.fetch(
+    `*[_type == "simpleProduct" && (title match $query || tags[] match $query || features[] match $query)] {
+      _id, title, slug, "image": images[0], "collection": collection->{_id, title, slug}, price, quoteSettings
+    }`,
+    { query: `*${query}*` } as any  // 👈 ADD "as any"
+  );
 }
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
-  const { q } = await searchParams;
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const params = await searchParams;
+  const q = params?.q || '';
   const products = q ? await searchProducts(q) : [];
 
   return (
