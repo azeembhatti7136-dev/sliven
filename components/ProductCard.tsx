@@ -51,12 +51,15 @@ export default function ProductCard({ product, compact = false }: { product: any
               Out of Stock
             </button>
           ) : (
-            <QuoteButton 
-              productId={product._id} 
-              productName={product.title} 
-              buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'} 
-              className={`w-full ${compact ? 'text-xs py-1.5' : 'text-sm py-2.5'}`} 
-            />
+           <QuoteButton
+  productId={product._id}
+  productName={product.title}
+  productImage={product.images?.[0]}     // 👈 ADD
+  productSku={product.sku}               // 👈 ADD
+  productCollection={product.collection?.title} // 👈 ADD
+  buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
+  className="w-full text-sm py-2.5"
+/>
           )}
         </div>
       </div>

@@ -31,11 +31,14 @@ export default function QuoteButton({
       </button>
 
       <QuoteFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        productId={productId}
-        productName={productName}
-      />
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  productId={productId}
+  productName={productName}
+  productImage={productImage}        // 👈 ADD
+  productSku={productSku}            // 👈 ADD
+  productCollection={productCollection} // 👈 ADD
+/>
     </>
   );
 }
