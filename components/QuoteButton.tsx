@@ -8,6 +8,9 @@ import QuoteFormModal from './QuoteFormModal';
 interface QuoteButtonProps {
   productId: string;
   productName: string;
+  productImage?: any;        // 👈 ADD
+  productSku?: string;        // 👈 ADD
+  productCollection?: string; // 👈 ADD
   buttonText?: string;
   className?: string;
 }
@@ -15,6 +18,9 @@ interface QuoteButtonProps {
 export default function QuoteButton({
   productId,
   productName,
+  productImage,         // 👈 ADD
+  productSku,           // 👈 ADD
+  productCollection,    // 👈 ADD
   buttonText = 'Get Quote',
   className = '',
 }: QuoteButtonProps) {
@@ -31,14 +37,14 @@ export default function QuoteButton({
       </button>
 
       <QuoteFormModal
-  isOpen={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-  productId={productId}
-  productName={productName}
-  productImage={productImage}        // 👈 ADD
-  productSku={productSku}            // 👈 ADD
-  productCollection={productCollection} // 👈 ADD
-/>
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        productId={productId}
+        productName={productName}
+        productImage={productImage}           // 👈 PASS
+        productSku={productSku}               // 👈 PASS
+        productCollection={productCollection} // 👈 PASS
+      />
     </>
   );
 }
