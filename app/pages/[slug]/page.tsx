@@ -20,6 +20,7 @@ import PartnerSlider from '@/components/PartnerSlider';
 import StepsCard from '@/components/StepsCard';
 import Testimonial from '@/components/Testimonial';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 async function getPageData(slug: string) {
   return client.fetch(`
     *[_type == "page" && slug.current == $slug][0] {
