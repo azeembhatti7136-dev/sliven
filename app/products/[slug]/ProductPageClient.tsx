@@ -70,7 +70,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
   const magnifierBgUrl = currentImage ? urlFor(currentImage).width(800).height(800).url() : '';
 
   // 👇 ONLY FILLED SPECS
-  const specsData: [string, any][] = [
+  const specsData: Array<[string, any]> = [
     ['Brand', product.brand || specs.brand],
     ['Manufacturer', product.manufacturer || specs.manufacturer],
     ['Color', product.color || specs.color],
