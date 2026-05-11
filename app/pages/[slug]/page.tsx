@@ -19,7 +19,7 @@ import Timeline from '@/components/Timeline';
 import PartnerSlider from '@/components/PartnerSlider';
 import StepsCard from '@/components/StepsCard';
 import Testimonial from '@/components/Testimonial';
-
+export const dynamic = 'force-dynamic';
 async function getPageData(slug: string) {
   return client.fetch(`
     *[_type == "page" && slug.current == $slug][0] {

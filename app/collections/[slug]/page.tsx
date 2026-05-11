@@ -14,7 +14,7 @@ import ContactForm from '@/components/ContactForm';
 import CollectionProducts from '@/components/CollectionProducts';
 import FAQ from '@/components/FAQ';
 import { notFound } from 'next/navigation';
-
+export const dynamic = 'force-dynamic';
 async function getCollectionData(slug: string) {
   return client.fetch(`
     *[_type == "simpleCollection" && slug.current == $slug][0] {

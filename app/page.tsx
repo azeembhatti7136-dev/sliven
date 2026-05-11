@@ -22,7 +22,7 @@ import StepsCard from '@/components/StepsCard';
 import Testimonial from '@/components/Testimonial';
 
 
-
+export const dynamic = 'force-dynamic';
 
 
 
