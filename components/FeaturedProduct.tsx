@@ -174,7 +174,7 @@ export default function FeaturedProduct({
   productName={productName}
   productImage={product.images?.[0]}  // 👈 ADD
   productSku={product.sku}
-  productCollection={product.collection?.title}
+  productCollection={(product as any).collection?.title}
   buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
   className="px-8 py-3.5 text-base"
 />
