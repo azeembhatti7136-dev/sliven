@@ -178,7 +178,15 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
               </div>
             )}
             <div className="space-y-2 pt-2">
-              <QuoteButton productId={product._id} productName={product.title} buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'} className="w-full text-base py-3.5" />
+              <QuoteButton
+  productId={product._id}
+  productName={product.title}
+  productImage={product.images?.[0]}           // 👈 ADD
+  productSku={product.sku}                     // 👈 ADD
+  productCollection={product.collection?.title} // 👈 ADD
+  buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
+  className="w-full text-base py-3.5"
+/>
               <p className="text-xs text-gray-400 text-center">We'll respond within 24 hours</p>
             </div>
           </div>

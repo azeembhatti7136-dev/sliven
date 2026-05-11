@@ -169,12 +169,15 @@ export default function FeaturedProduct({
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3 pt-2">
         {isQuoteProduct ? (
-          <QuoteButton
-            productId={product._id}
-            productName={productName}
-            buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
-            className="px-8 py-3.5 text-base"
-          />
+         <QuoteButton
+  productId={product._id}
+  productName={productName}
+  productImage={product.images?.[0]}  // 👈 ADD
+  productSku={product.sku}
+  productCollection={product.collection?.title}
+  buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
+  className="px-8 py-3.5 text-base"
+/>
         ) : (
           <button className="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl">
             <ShoppingCart className="w-5 h-5" />
