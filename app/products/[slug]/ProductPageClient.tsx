@@ -70,17 +70,22 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
   const magnifierBgUrl = currentImage ? urlFor(currentImage).width(800).height(800).url() : '';
 
   // 👇 ONLY FILLED SPECS
-  const specsData = [
-  ['Brand', product.brand || specs.brand],
-  ['Manufacturer', product.manufacturer || specs.manufacturer],
-  ['Color', product.color || specs.color],
-  ['Pattern', product.pattern || specs.pattern],
-  ['Composition', specs.composition],
-  ['Eco-Friendly Fabric', specs.fabricType],
-  ['Apparel Type', specs.apparelType],
-  ['Production Type', specs.productionType],
-  ['Use', specs.use],
-] as [string, any][]).filter(([_, value]) => value && String(value).trim() !== '');
+ // 👇 ONLY FILLED SPECS (Syntax fixed)
+  const specsDataList: [string, any][] = [
+    ['Brand', product.brand || specs.brand],
+    ['Manufacturer', product.manufacturer || specs.manufacturer],
+    ['Color', product.color || specs.color],
+    ['Pattern', product.pattern || specs.pattern],
+    ['Composition', specs.composition],
+    ['Eco-Friendly Fabric', specs.fabricType],
+    ['Apparel Type', specs.apparelType],
+    ['Production Type', specs.productionType],
+    ['Use', specs.use],
+  ];
+
+  const specsData = specsDataList.filter(
+    ([_, value]) => value && String(value).trim() !== ''
+  );
 
   return (
     <main key={product._id} className="min-h-screen bg-white">
