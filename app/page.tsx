@@ -21,15 +21,13 @@ import PartnerSlider from '@/components/PartnerSlider';
 import StepsCard from '@/components/StepsCard';
 import Testimonial from '@/components/Testimonial';
 
-
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-
 // Fetch home page data
 async function getHomePage() {
-  return client.fetch(`
-    *[_type == "home"][0] {
+  return client.fetch(
+    `*[_type == "home"][0] {
       hero {
         backgroundImage,
         overlayOpacity,
@@ -58,7 +56,7 @@ async function getHomePage() {
           sectionTitle,
           "title": title.text,
           subtitle,
-          features[] {
+          features {
             _key,
             icon,
             title,
@@ -68,207 +66,233 @@ async function getHomePage() {
           backgroundColor
         },
         _type == "testimonial" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  testimonials[] { _key, name, role, avatar, rating, quote },
-  backgroundColor
-},
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          testimonials { 
+            _key, 
+            name, 
+            role, 
+            avatar, 
+            rating, 
+            quote 
+          },
+          backgroundColor
+        },
         _type == "stepsCard" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  steps[] { _key, stepNumber, title, description, icon },
-  backgroundColor
-},
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          steps { 
+            _key, 
+            stepNumber, 
+            title, 
+            description, 
+            icon 
+          },
+          backgroundColor
+        },
         _type == "timeline" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  steps[] { _key, stepNumber, title, description, image },
-  backgroundColor
-},
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          steps { 
+            _key, 
+            stepNumber, 
+            title, 
+            description, 
+            image 
+          },
+          backgroundColor
+        },
         _type == "faq" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  faqs[] {
-    _key,
-    question,
-    "answer": answer.text
-  },
-  columns,
-  backgroundColor
-},
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          faqs {
+            _key,
+            question,
+            "answer": answer.text
+          },
+          columns,
+          backgroundColor
+        },
         _type == "imageTextSection" => {
-  "title": title.text,
-  subtitle,
-  backgroundImage,      // 👈 ADD
-  backgroundOpacity, 
-  sections[] {
-    _key,
-    layout,
-    "title": title.text,
-    "description": description.text,
-    image,
-    imageAlt,
-    buttonText,
-    buttonLink
-  },
-  backgroundColor
-},
-_type == "contactForm" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  contactImage,
-  backgroundColor,
-  showInfo,
-  email,
-  phone,
-  address
-},
-_type == "imageGallery" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  images[] {
-    _key,
-    asset,
-    alt,
-    caption
-  },
-  columns,
-  gap,
-  backgroundColor
-},
-_type == "popularProducts" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  products[]-> {
-    _id,
-    title,
-    name,
-    slug,
-    price,
-    compareAtPrice,
-    "images": images[] {
-      _key,
-      asset->,
-      alt
-    },
-    "image": images[0],
-    features,
-    stock,
-    tags,
-    quoteSettings
-  },
-  showViewAll,
-  viewAllText,
-  backgroundColor
-},
-_type == "contentBox" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  boxes[] {
-    _key,
-    layout,
-    image,
-    imageAlt,
-    "boxTitle": boxTitle.text,
-    "boxDescription": boxDescription.text,
-    features,
-    buttonText,
-    buttonLink,
-    backgroundColor,
-    roundedCorners
-  },
-  sectionBackground
-},
+          "title": title.text,
+          subtitle,
+          backgroundImage,
+          backgroundOpacity, 
+          sections {
+            _key,
+            layout,
+            "title": title.text,
+            "description": description.text,
+            image,
+            imageAlt,
+            buttonText,
+            buttonLink
+          },
+          backgroundColor
+        },
+        _type == "contactForm" => {
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          contactImage,
+          backgroundColor,
+          showInfo,
+          email,
+          phone,
+          address
+        },
+        _type == "imageGallery" => {
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          images {
+            _key,
+            asset,
+            alt,
+            caption
+          },
+          columns,
+          gap,
+          backgroundColor
+        },
+        _type == "popularProducts" => {
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          products[]-> {
+            _id,
+            title,
+            name,
+            slug,
+            price,
+            compareAtPrice,
+            "images": images {
+              _key,
+              "asset": asset->,
+              alt
+            },
+            "image": images[0],
+            features,
+            stock,
+            tags,
+            quoteSettings
+          },
+          showViewAll,
+          viewAllText,
+          backgroundColor
+        },
+        _type == "contentBox" => {
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          boxes {
+            _key,
+            layout,
+            image,
+            imageAlt,
+            "boxTitle": boxTitle.text,
+            "boxDescription": boxDescription.text,
+            features,
+            buttonText,
+            buttonLink,
+            backgroundColor,
+            roundedCorners
+          },
+          sectionBackground
+        },
         _type == "featuredCollections" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  collections[]-> {
-    _id,
-    title,
-    slug,
-    description,
-    image,
-    "products": products[]-> {
-      _id,
-      title
-    }
-  },
-  layout,
-  backgroundColor
-},
-_type == "featuredProduct" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  product-> {
-    _id,
-    title,
-    name,
-    slug,
-    sku,
-    price,
-    compareAtPrice,
-    "images": images[] { _key, asset->, alt },
-    description,
-    features,
-    stock,
-    tags,
-    quoteSettings
-  },
-  layout,
-  showFeatures,
-  showFullDescription,
-  backgroundColor
-},
-_type == "cardGrid" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  cards[] {
-    _key,
-    image,
-    imageAlt,
-    cardTitle,
-    cardDescription,
-    link,
-    backgroundColor
-  },
-  sectionBackground
-},
-_type == "partnerSlider" => {
-  sectionLabel,
-  "title": title.text,
-  subtitle,
-  logos[] { _key, image, name, link },
-  backgroundColor
-},
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          collections[]-> {
+            _id,
+            title,
+            slug,
+            description,
+            image,
+            "products": products[]-> {
+              _id,
+              title
+            }
+          },
+          layout,
+          backgroundColor
+        },
+        _type == "featuredProduct" => {
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          product-> {
+            _id,
+            title,
+            name,
+            slug,
+            sku,
+            price,
+            compareAtPrice,
+            "images": images { 
+              _key, 
+              "asset": asset->, 
+              alt 
+            },
+            description,
+            features,
+            stock,
+            tags,
+            quoteSettings
+          },
+          layout,
+          showFeatures,
+          showFullDescription,
+          backgroundColor
+        },
+        _type == "cardGrid" => {
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          cards {
+            _key,
+            image,
+            imageAlt,
+            cardTitle,
+            cardDescription,
+            link,
+            backgroundColor
+          },
+          sectionBackground
+        },
+        _type == "partnerSlider" => {
+          sectionLabel,
+          "title": title.text,
+          subtitle,
+          logos { 
+            _key, 
+            image, 
+            name, 
+            link 
+          },
+          backgroundColor
+        },
         _type == "hero" => {
           backgroundImage,
           overlayOpacity,
-          "title": title.text,        // 👈 Rich text
-          "subtitle": subtitle.text,  // 👈 Rich text
+          "title": title.text,
+          "subtitle": subtitle.text,
           showButton,
           buttonText,
           buttonLink,
           textAlignment,
           height
         }
-          
       }
-    }
-      {
-      cache: 'no-store', // 👈 Next.js default fetch cache bypass karega
-    }
-  `);
+    }`,
+    {}, // empty params
+    { cache: 'no-store' } // 👈 Correctly passed outside of the GROQ string!
+  );
 }
 
 export default async function Home() {
@@ -276,9 +300,6 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      
-
       {/* Dynamic Hero from Sanity */}
       {homePage?.hero ? (
         <Hero {...homePage.hero} />
@@ -300,54 +321,49 @@ export default async function Home() {
 
       {/* Render Modules */}
       {homePage?.modules?.map((module: any) => {
-  if (module._type === 'featuresSection') {
-    return <FeaturesSection key={module._key} {...module} />;
-  }
-  if (module._type === 'videoWithText') {
-    return <VideoWithText key={module._key} {...module} />;
-  }
-  if (module._type === 'hero') {
-    return <Hero key={module._key} {...module} />;
-  }
-  if (module._type === 'featuredCollections') {
-  return <FeaturedCollections key={module._key} {...module} />;
-}
-if (module._type === 'imageTextSection') {
-  return <ImageTextSection key={module._key} {...module} />;
-}
-if (module._type === 'popularProducts') {
-  return <PopularProducts key={module._key} {...module} />;
-}
-if (module._type === 'imageGallery') {
-  return <ImageGallery key={module._key} {...module} />;
-}
-if (module._type === 'contentBox') {
-  return <ContentBoxes key={module._key} {...module} />;
-}
-if (module._type === 'cardGrid') {
-  return <CardGrid key={module._key} {...module} />;
-}
-if (module._type === 'contactForm') {
-  return <ContactForm key={module._key} {...module} />;
-}
-if (module._type === 'featuredProduct') {
-  return <FeaturedProduct key={module._key} {...module} />;
-}
-if (module._type === 'faq') {
-  return <FAQ key={module._key} {...module} />;
-}
-if (module._type === 'timeline') return <Timeline key={module._key} {...module} />;
-if (module._type === 'partnerSlider') return <PartnerSlider key={module._key} {...module} />;
-if (module._type === 'stepsCard') return <StepsCard key={module._key} {...module} />;
-if (module._type === 'testimonial') return <Testimonial key={module._key} {...module} />;
+        if (module._type === 'featuresSection') {
+          return <FeaturesSection key={module._key} {...module} />;
+        }
+        if (module._type === 'videoWithText') {
+          return <VideoWithText key={module._key} {...module} />;
+        }
+        if (module._type === 'hero') {
+          return <Hero key={module._key} {...module} />;
+        }
+        if (module._type === 'featuredCollections') {
+          return <FeaturedCollections key={module._key} {...module} />;
+        }
+        if (module._type === 'imageTextSection') {
+          return <ImageTextSection key={module._key} {...module} />;
+        }
+        if (module._type === 'popularProducts') {
+          return <PopularProducts key={module._key} {...module} />;
+        }
+        if (module._type === 'imageGallery') {
+          return <ImageGallery key={module._key} {...module} />;
+        }
+        if (module._type === 'contentBox') {
+          return <ContentBoxes key={module._key} {...module} />;
+        }
+        if (module._type === 'cardGrid') {
+          return <CardGrid key={module._key} {...module} />;
+        }
+        if (module._type === 'contactForm') {
+          return <ContactForm key={module._key} {...module} />;
+        }
+        if (module._type === 'featuredProduct') {
+          return <FeaturedProduct key={module._key} {...module} />;
+        }
+        if (module._type === 'faq') {
+          return <FAQ key={module._key} {...module} />;
+        }
+        if (module._type === 'timeline') return <Timeline key={module._key} {...module} />;
+        if (module._type === 'partnerSlider') return <PartnerSlider key={module._key} {...module} />;
+        if (module._type === 'stepsCard') return <StepsCard key={module._key} {...module} />;
+        if (module._type === 'testimonial') return <Testimonial key={module._key} {...module} />;
 
-  return null;
-})}
-
-      
-
-      
-      
+        return null;
+      })}
     </main>
   );
 }
