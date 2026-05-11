@@ -265,6 +265,9 @@ _type == "partnerSlider" => {
           
       }
     }
+      {
+      cache: 'no-store', // 👈 Next.js default fetch cache bypass karega
+    }
   `);
 }
 
