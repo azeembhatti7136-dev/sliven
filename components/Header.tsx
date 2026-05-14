@@ -46,7 +46,7 @@ export default function Header({ menu, logo, logoText }: HeaderProps) {
 
   // 👇 OUTSIDE CLICK HANDLER
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       // Close search if clicked outside
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
         setIsSearchOpen(false);
