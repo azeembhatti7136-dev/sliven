@@ -15,8 +15,21 @@ async function getSettings() {
       menu {
         links[] {
           _key, _type,
+          // Collection Group
+          _type == "collectionGroup" => { label, "link": reference->slug.current },
+          // Internal Link
           _type == "linkInternal" => { label, "link": reference->slug.current },
-          _type == "linkExternal" => { label, url }
+          // External Link
+          _type == "linkExternal" => { label, "url": url },
+          // 👇 DROPDOWN
+          _type == "dropdownMenu" => {
+            label,
+            childLinks[] {
+              _key, _type,
+              _type == "linkInternal" => { label, "link": reference->slug.current },
+              _type == "linkExternal" => { label, "url": url }
+            }
+          }
         }
       },
       footer { links[] { _key, _type, _type == "linkInternal" => { label, "link": reference->slug.current }, _type == "linkExternal" => { label, url } }, text }
