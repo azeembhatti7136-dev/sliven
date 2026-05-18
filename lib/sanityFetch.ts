@@ -2,9 +2,13 @@
 import { createClient } from '@sanity/client';
 
 export const fetchClient = createClient({
-  projectId: 'd2zeiu5j',
-  dataset: 'production',
-  apiVersion: '2024-01-01',
-  useCdn: true, // 👈 Client side fetches ke liye useCdn: true rakhna behtar aur safe hai
-  perspective: 'published', // 👈 explicit perspective add ki takay auth internal checks bypass hon
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'd2zeiu5j',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-01-01',
+  useCdn: true,
+  perspective: 'published',
+  // 👇 Yeh line add karein - auth issue fix karne ke liye
+  token: undefined,
+  // 👇 Agar ab bhi error aaye toh yeh bhi add karein
+  ignoreBrowserTokenWarning: true,
 });

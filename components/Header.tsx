@@ -153,9 +153,9 @@ export default function Header() {
             ))}
 
             {/* Mega Menu */}
-            {settings?.megaMenu?.enabled && (
-              <MegaMenu config={settings.megaMenu} />
-            )}
+            {settings?.megaMenu?.enabled && settings?.megaMenu && (
+  <MegaMenu config={settings.megaMenu} />
+)}
           </nav>
 
           {/* ───── Right Actions ───── */}
