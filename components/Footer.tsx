@@ -21,6 +21,7 @@ interface FooterColumn {
 interface FooterProps {
   logo?: any;
   logoText?: string;
+  logoUrl?: string; // 👈 ADD THIS LINE
   description?: string;
   columns?: FooterColumn[];
   bottomText?: string;
