@@ -23,11 +23,31 @@ export default function Header() {
   const router = useRouter();
 
   // Fetch settings + collections
-  useEffect(() => {
-  fetchClient.fetch(`{...}`).then((data: any) => {
+  // Fetch settings + collections
+useEffect(() => {
+  fetchClient.fetch(`{
+    "settings": *[_type == "settings"][0] {
+      menu {
+        logo, logoText, logoWidth,
+        megaMenu {
+          enabled, title, showImages, viewAllText, viewAllUrl,
+          columns[] {
+            _key, title,
+            links[] { label, url, image }
+          }
+        },
+        links[] { label, url },
+        headerStyle { backgroundColor, sticky, showSearch, showCTA, ctaText, ctaUrl }
+      }
+    },
+    "collections": *[_type == "simpleCollection"] | order(title asc) { _id, title, slug, image }
+  }`).then((data: any) => {
     setSettings(data?.settings?.menu);
     setCollections(data?.collections || []);
-  }).catch(() => setCollections([]));
+  }).catch((err) => {
+    console.error('Header fetch error:', err);
+    setCollections([]);
+  });
 }, []);
 
   // Default values
@@ -44,13 +64,7 @@ export default function Header() {
   const ctaText = headerStyle.ctaText || 'Get Quote';
   const ctaUrl = headerStyle.ctaUrl || '/products';
   const megaMenuConfig = settings?.megaMenu;
-  const sanityClient = {
-  projectId: 'd2zeiu5j',
-  dataset: 'production',
-  apiVersion: '2024-01-01',
-  useCdn: false,
-  token: 'skOeQMcWt1pNdZZwULo95IJHqLz9lTo0D4atOcdVAUPnTh1WhK6papcI2bZuesz9qC98cTd8LdsNNuFZjmVqIZWqUZfI8CCM3Pc4Wqmff9Ln104f1RceF1TOY1nPRA2TKToaemAYfq82VrACUzHw1YQ14CIlKLvJeLvwV5LUnq4BbHRPSASQ',
-};
+ 
 
   // Colors
   const isDark = bgColor === '#000000' || bgColor === '#111827';
