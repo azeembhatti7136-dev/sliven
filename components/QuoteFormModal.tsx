@@ -8,8 +8,8 @@ import { z } from 'zod';
 import Image from 'next/image';
 import { X, Send, Loader2, CheckCircle, Package } from 'lucide-react';
 import { toast } from 'sonner';
-import { client } from '@/lib/sanity';
-import { urlFor } from '@/lib/sanity';
+// ❌ DELETE: import { client } from '@/lib/sanity';
+// ❌ DELETE: import { urlFor } from '@/lib/sanity';
 import { QuoteFormData } from '@/types';
 
 const quoteSchema = z.object({
@@ -26,7 +26,8 @@ interface QuoteFormModalProps {
   onClose: () => void;
   productId: string;
   productName: string;
-  productImage?: any;  // 👈 Product image
+  productImage?: any;
+  productImageUrl?: string; // 👈 ADD: Pre-processed URL
   productSku?: string;
   productCollection?: string;
 }
@@ -37,6 +38,7 @@ export default function QuoteFormModal({
   productId,
   productName,
   productImage,
+  productImageUrl, // 👈 ADD
   productSku,
   productCollection,
 }: QuoteFormModalProps) {
@@ -57,18 +59,17 @@ export default function QuoteFormModal({
     setIsSubmitting(true);
 
     try {
-      await client.create({
-        _type: 'quoteRequest',
-        product: { _type: 'reference', _ref: productId },
-        fullName: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        company: data.company,
-        quantity: data.quantity,
-        requirements: data.requirements,
-        status: 'new',
-        submittedAt: new Date().toISOString(),
+      // 👇 API route se Sanity mein data save karo
+      const response = await fetch('/api/submit-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          ...data,
+        }),
       });
+
+      if (!response.ok) throw new Error('Failed to submit');
 
       setIsSuccess(true);
       toast.success('Quote request submitted! We\'ll contact you soon.');
@@ -107,8 +108,8 @@ export default function QuoteFormModal({
         <div className="p-6 border-b border-gray-50 bg-gray-50">
           <div className="flex items-center gap-4">
             <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white border border-gray-200 flex-shrink-0">
-              {productImage ? (
-                <Image src={urlFor(productImage).width(100).height(100).url()} alt={productName} fill className="object-cover" sizes="64px" />
+              {productImageUrl ? ( // 👈 Use URL directly
+                <Image src={productImageUrl} alt={productName} fill className="object-cover" sizes="64px" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-300"><Package className="w-8 h-8" /></div>
               )}

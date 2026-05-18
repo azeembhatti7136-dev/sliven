@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
-import { client } from '@/lib/sanity';
+// ❌ DELETE: import { urlFor } from '@/lib/sanity';
+// ❌ DELETE: import { client } from '@/lib/sanity';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -30,6 +30,7 @@ interface ContactFormProps {
   title: any;
   subtitle?: string;
   contactImage?: any;
+  contactImageUrl?: string; // 👈 ADD
   backgroundColor?: string;
   showInfo?: boolean;
   email?: string;
@@ -42,6 +43,7 @@ export default function ContactForm({
   title,
   subtitle,
   contactImage,
+  contactImageUrl, // 👈 ADD
   backgroundColor = '#f9fafb',
   showInfo = true,
   email,
@@ -70,15 +72,14 @@ export default function ContactForm({
     setIsSubmitting(true);
 
     try {
-      await client.create({
-        _type: 'contactSubmission',
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        subject: data.subject,
-        message: data.message,
-        submittedAt: new Date().toISOString(),
+      // 👇 API route se Sanity mein data save karo
+      const response = await fetch('/api/submit-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
+
+      if (!response.ok) throw new Error('Failed to submit');
 
       setIsSuccess(true);
       toast.success('Message sent successfully! We\'ll get back to you soon.');
@@ -174,10 +175,10 @@ export default function ContactForm({
               </div>
 
               {/* Side Image */}
-              {contactImage && (
+              {contactImageUrl && ( // 👈 Use URL directly
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-lg">
                   <Image
-                    src={urlFor(contactImage).width(600).height(450).url()}
+                    src={contactImageUrl}
                     alt="Contact"
                     fill
                     sizes="(max-width: 1024px) 100vw, 40vw"
