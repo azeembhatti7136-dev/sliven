@@ -4,6 +4,7 @@
 import { PortableText } from '@portabletext/react';
 import Image from 'next/image';
 import Link from 'next/link';
+
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
   const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
@@ -14,28 +15,9 @@ function getImageUrl(image: any, width: number = 800, height?: number): string {
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
 
-
-// 👇 Safe image URL builder without @sanity/client
-function getImageUrl(imageRef: string): string {
-  const projectId = 'd2zeiu5j';
-  const dataset = 'production';
-  // imageRef format: image-{id}-{width}x{height}-{format}
-  const parts = imageRef.split('-');
-  const id = parts[1];
-  const dimensions = parts[2];
-  const format = parts[3] || 'jpg';
-  return `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-${dimensions}.${format}`;
-}
-
-function getSanityImageUrl(image: any): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  // ref format: image-{id}-{dimensions}-{format}
-  const [, id, dimensions, format] = ref.split('-');
-  const projectId = 'd2zeiu5j';
-  const dataset = 'production';
-  return `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-800x450.${format || 'jpg'}`;
-}
+// ❌ DELETE these:
+// function getImageUrl(imageRef: string): string { ... }  ← DELETE
+// function getSanityImageUrl(image: any): string { ... }   ← DELETE
 
 interface RichTextRendererProps {
   content: any;
@@ -54,7 +36,7 @@ const createComponents = (headingColor = 'text-gray-900', descriptionColor = 'te
     image: ({value}: any) => (
       <div className="relative aspect-video my-6 rounded-xl overflow-hidden">
         <Image
-          src={getSanityImageUrl(value)} // 👈 Safe URL function
+          src={getImageUrl(value)} // 👈 Use getImageUrl
           alt={value.alt || ''}
           fill
           className="object-cover"
@@ -130,4 +112,3 @@ export default function RichTextRenderer({
     </div>
   );
 }
-

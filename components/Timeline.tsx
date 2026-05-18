@@ -16,16 +16,7 @@ function getImageUrl(image: any, width: number = 800, height?: number): string {
 }
 
 
-// 👇 Safe image URL function (no @sanity imports)
-function getImageUrl(image: any, width: number = 600, height: number = 400): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const match = ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${height}.${fmt}`;
-}
+
 
 interface TimelineStep {
   _key: string;
