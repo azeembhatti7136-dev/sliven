@@ -75,3 +75,4 @@ export default function ProductCard({ product, compact = false }: { product: any
     </div>
   );
 }
+

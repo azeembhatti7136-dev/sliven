@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import RichTextRenderer from './RichTextRenderer';
-// ❌ DELETE: function getImageUrl(image: any, width: number = 800, height?: number): string {
+function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
   const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
   if (!match) return '';
@@ -325,3 +325,4 @@ export default function ContactForm({
     </section>
   );
 }
+

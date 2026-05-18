@@ -157,3 +157,4 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
     </section>
   );
 }
+
