@@ -7,38 +7,47 @@ import Link from 'next/link';
 import { ChevronDown, ArrowRight } from 'lucide-react';
 import { urlFor } from '@/lib/sanity';
 
-interface MenuColumn {
-  _key: string;
-  title: string;
-  links: Array<{
-    label: string;
-    url: string;
-    image?: any;
-  }>;
-}
-
 interface MegaMenuConfig {
-  enabled: boolean;
-  title: string;
-  columns: MenuColumn[];
-  showImages: boolean;
-  viewAllText: string;
-  viewAllUrl: string;
+  enabled?: boolean;
+  title?: string;
+  columns?: Array<{
+    _key: string;
+    title: string;
+    links?: Array<{
+      label: string;
+      url: string;
+      image?: any;
+    }>;
+  }>;
+  showImages?: boolean;
+  viewAllText?: string;
+  viewAllUrl?: string;
 }
 
 interface MegaMenuProps {
-  config: MegaMenuConfig;
-  textClass?: string;
+  config?: MegaMenuConfig | null;
 }
 
-export default function MegaMenu({ config, textClass = 'text-white' }: MegaMenuProps) {
+export default function MegaMenu({ config }: MegaMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<NodeJS.Timeout | null>(null);
 
+  // 👇 SAFE CHECK - Return null if no config
+  if (!config?.enabled || !config.columns?.length) return null;
+
+  const { title = 'Collections', columns = [], showImages, viewAllText = 'View All', viewAllUrl = '/collections' } = config;
+  const colCount = Math.min(columns.length, 4);
+  
+  // 👇 Dynamic grid cols
+  const gridCols = colCount === 4 ? 'grid-cols-4' : colCount === 3 ? 'grid-cols-3' : colCount === 2 ? 'grid-cols-2' : 'grid-cols-1';
+  const widthClass = colCount === 4 ? 'w-[750px]' : colCount === 3 ? 'w-[600px]' : colCount === 2 ? 'w-[400px]' : 'w-[250px]';
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('touchstart', handleClickOutside);
@@ -57,42 +66,33 @@ export default function MegaMenu({ config, textClass = 'text-white' }: MegaMenuP
     closeTimer.current = setTimeout(() => setIsOpen(false), 200);
   };
 
-  if (!config?.enabled || !config.columns?.length) return null;
-
-  const { title, columns, showImages, viewAllText, viewAllUrl } = config;
-  const colCount = columns.length;
-  const widthClass = colCount === 4 ? 'w-[800px]' : colCount === 3 ? 'w-[650px]' : colCount === 2 ? 'w-[450px]' : 'w-[300px]';
-
   return (
     <div ref={menuRef} className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      {/* Trigger Button */}
-      <button className={`px-4 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all flex items-center gap-1 ${isOpen ? 'text-white bg-gray-800' : ''}`}>
+      {/* Trigger */}
+      <button className={`px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all flex items-center gap-1 ${isOpen ? 'text-white bg-gray-800' : ''}`}>
         {title}
         <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Mega Menu Dropdown */}
+      {/* Dropdown */}
       {isOpen && (
-        <div className={`absolute top-full left-0 mt-2 ${widthClass} max-w-[95vw] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-3 duration-200`}>
+        <div className={`absolute top-full left-0 mt-2 ${widthClass} max-w-[95vw] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-50`}>
           <div className="p-6 lg:p-8">
-            <div className={`grid grid-cols-${colCount} gap-6 lg:gap-8`}>
+            <div className={`grid ${gridCols} gap-6 lg:gap-8`}>
               {columns.map((column) => (
-                <div key={column._key}>
-                  {/* Column Title */}
+                <div key={column._key || column.title}>
                   <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4 pb-2 border-b border-gray-100">
                     {column.title}
                   </h4>
-                  
-                  {/* Column Links */}
                   <ul className="space-y-3">
-                    {column.links?.map((link, i) => (
+                    {(column.links || []).map((link, i) => (
                       <li key={i}>
                         <Link
                           href={link.url || '#'}
                           onClick={() => setIsOpen(false)}
                           className="flex items-center gap-3 group/link"
                         >
-                          {showImages && link.image && (
+                          {showImages && link.image?.asset?._ref && (
                             <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
                               <Image
                                 src={urlFor(link.image).width(64).height(64).url()}
@@ -115,7 +115,7 @@ export default function MegaMenu({ config, textClass = 'text-white' }: MegaMenuP
             </div>
           </div>
 
-          {/* View All Footer */}
+          {/* Footer */}
           <Link
             href={viewAllUrl}
             onClick={() => setIsOpen(false)}
