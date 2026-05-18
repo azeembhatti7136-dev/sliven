@@ -60,6 +60,13 @@ export default function Header() {
   const ctaText = headerStyle.ctaText || 'Get Quote';
   const ctaUrl = headerStyle.ctaUrl || '/products';
   const megaMenuConfig = settings?.megaMenu;
+  const sanityClient = {
+  projectId: 'd2zeiu5j',
+  dataset: 'production',
+  apiVersion: '2024-01-01',
+  useCdn: false,
+  token: 'skOeQMcWt1pNdZZwULo95IJHqLz9lTo0D4atOcdVAUPnTh1WhK6papcI2bZuesz9qC98cTd8LdsNNuFZjmVqIZWqUZfI8CCM3Pc4Wqmff9Ln104f1RceF1TOY1nPRA2TKToaemAYfq82VrACUzHw1YQ14CIlKLvJeLvwV5LUnq4BbHRPSASQ',
+};
 
   // Colors
   const isDark = bgColor === '#000000' || bgColor === '#111827';
