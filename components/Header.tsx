@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -23,35 +22,35 @@ export default function Header() {
   const router = useRouter();
 
   // Fetch settings + collections
-  // Fetch settings + collections
-useEffect(() => {
-  fetchClient.fetch(`{
-    "settings": *[_type == "settings"][0] {
-      menu {
-        logo, logoText, logoWidth,
-        megaMenu {
-          enabled, title, showImages, viewAllText, viewAllUrl,
-          columns[] {
-            _key, title,
-            links[] { label, url, image }
-          }
-        },
-        links[] { label, url },
-        headerStyle { backgroundColor, sticky, showSearch, showCTA, ctaText, ctaUrl }
+  useEffect(() => {
+    fetchClient.fetch(`{
+      "settings": *[_type == "settings"][0] {
+        menu {
+          logo, logoText, logoWidth,
+          megaMenu {
+            enabled, title, showImages, viewAllText, viewAllUrl,
+            columns[] {
+              _key, title,
+              links[] { label, url, image }
+            }
+          },
+          links[] { label, url },
+          headerStyle { backgroundColor, sticky, showSearch, showCTA, ctaText, ctaUrl }
+        }
+      },
+      "collections": *[_type == "simpleCollection"] | order(title asc) { _id, title, slug, image }
+    }`)
+    .then((data: any) => {
+      if (data?.settings?.menu) {
+        setSettings(data.settings.menu);
       }
-    },
-    "collections": *[_type == "simpleCollection"] | order(title asc) { _id, title, slug, image }
-  }`).then((data: any) => {
-  if (data?.settings?.menu) {
-    setSettings(data.settings.menu);
-  }
-  setCollections(data?.collections || []);
-})
-  }).catch((err) => {
-    console.error('Header fetch error:', err);
-    setCollections([]);
-  });
-}, []);
+      setCollections(data?.collections || []);
+    })
+    .catch((err) => {
+      console.error('Header fetch error:', err);
+      setCollections([]);
+    });
+  }, []);
 
   // Default values
   const logo = settings?.logo;
@@ -67,7 +66,6 @@ useEffect(() => {
   const ctaText = headerStyle.ctaText || 'Get Quote';
   const ctaUrl = headerStyle.ctaUrl || '/products';
   const megaMenuConfig = settings?.megaMenu;
- 
 
   // Colors
   const isDark = bgColor === '#000000' || bgColor === '#111827';
@@ -155,10 +153,9 @@ useEffect(() => {
             ))}
 
             {/* Mega Menu */}
-           {settings?.megaMenu?.enabled && (
-  <MegaMenu config={settings.megaMenu} />
-)}
-
+            {settings?.megaMenu?.enabled && (
+              <MegaMenu config={settings.megaMenu} />
+            )}
           </nav>
 
           {/* ───── Right Actions ───── */}
