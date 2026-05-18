@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, Search, ArrowRight, ChevronDown } from 'lucide-react';
-import { urlFor } from '@/lib/sanity';
+
 
 import MegaMenu from './MegaMenu';
 

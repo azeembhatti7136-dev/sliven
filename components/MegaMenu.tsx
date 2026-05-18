@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronDown, ArrowRight } from 'lucide-react';
-import { urlFor } from '@/lib/sanity';
+
 
 interface MegaMenuConfig {
   enabled?: boolean;
@@ -16,7 +16,7 @@ interface MegaMenuConfig {
     links?: Array<{
       label: string;
       url: string;
-      image?: any;
+      imageUrl?: string; 
     }>;
   }>;
   showImages?: boolean;
@@ -95,7 +95,7 @@ export default function MegaMenu({ config }: MegaMenuProps) {
                           {showImages && link.image?.asset?._ref && (
                             <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
                               <Image
-                                src={urlFor(link.image).width(64).height(64).url()}
+                                src={link.imageUrl} 
                                 alt=""
                                 width={32}
                                 height={32}
