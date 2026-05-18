@@ -3,21 +3,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Package } from 'lucide-react';
 import QuoteButton from './QuoteButton';
-import { urlFor } from '@/lib/sanity';
+// ❌ DELETE: import { urlFor } from '@/lib/sanity';
 
 export default function ProductCard({ product, compact = false }: { product: any; compact?: boolean }) {
   const isQuoteProduct = product.quoteSettings?.enableQuote || false;
-  const imageUrl = product.image || product.images?.[0];
+  const imageUrl = product.imageUrl || product.image; // 👈 Use pre-processed URL or fallback
 
   return (
     <div className={`group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col ${compact ? 'w-[380px] h-[450px]' : ''}`}>
-  <Link href={`/products/${product.slug.current}`} className={`relative overflow-hidden bg-gray-50 ${compact ? 'aspect-square max-h-[380px]' : 'aspect-square'}`}>
+      <Link href={`/products/${product.slug.current}`} className={`relative overflow-hidden bg-gray-50 ${compact ? 'aspect-square max-h-[380px]' : 'aspect-square'}`}>
         {imageUrl ? (
           <Image 
-            src={urlFor(imageUrl).width(compact ? 200 : 400).height(compact ? 200 : 400).url()} 
+            src={imageUrl} // 👈 Direct URL
             alt={product.title} 
             fill 
-            sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw"} 
+            sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw)"} 
             className="object-cover group-hover:scale-105 transition-transform duration-500" 
           />
         ) : (
@@ -51,15 +51,15 @@ export default function ProductCard({ product, compact = false }: { product: any
               Out of Stock
             </button>
           ) : (
-           <QuoteButton
-  productId={product._id}
-  productName={product.title}
-  productImage={product.images?.[0]}     // 👈 ADD
-  productSku={product.sku}               // 👈 ADD
-  productCollection={product.collection?.title} // 👈 ADD
-  buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
-  className="w-full text-sm py-2.5"
-/>
+            <QuoteButton
+              productId={product._id}
+              productName={product.title}
+              productImage={product.images?.[0]}
+              productSku={product.sku}
+              productCollection={product.collection?.title}
+              buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
+              className="w-full text-sm py-2.5"
+            />
           )}
         </div>
       </div>
