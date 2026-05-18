@@ -49,6 +49,8 @@ export const metadata: Metadata = {
   description: 'Get custom quotes for bulk orders',
 };
 
+// src/app/layout.tsx
+
 export default async function RootLayout({
   children,
 }: {
@@ -56,8 +58,10 @@ export default async function RootLayout({
 }) {
   const settings = await getSettings();
   
-  // 👇 ADD: Process logo URL server-side
-  const logoUrl = settings?.logo ? urlFor(settings.logo)?.width(120).height(40).url() : null;
+  // 👇 FIX: null ko undefined mein convert karo
+  const logoUrl = settings?.logo ? urlFor(settings.logo)?.width(120).height(40).url() : undefined;
+  // YA yeh use karo:
+  // const logoUrl = settings?.logo ? urlFor(settings.logo)?.width(120).height(40).url() ?? undefined : undefined;
 
   return (
     <html lang="en">
@@ -65,7 +69,7 @@ export default async function RootLayout({
         <Header /> 
         {children}
         <Footer 
-          logoUrl={logoUrl} // 👈 ADD
+          logoUrl={logoUrl || undefined} // 👈 null ki jagah undefined bhejo
           logoText={settings?.logoText}
           links={settings?.footer?.links}
           text={settings?.footer?.text}
