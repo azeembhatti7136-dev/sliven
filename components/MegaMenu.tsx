@@ -1,11 +1,9 @@
-// src/components/MegaMenu.tsx
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronDown, ArrowRight } from 'lucide-react';
-
 
 interface MegaMenuConfig {
   enabled?: boolean;
@@ -16,7 +14,7 @@ interface MegaMenuConfig {
     links?: Array<{
       label: string;
       url: string;
-      imageUrl?: string; 
+      imageUrl?: string; // 👈 Server-side processed URL
     }>;
   }>;
   showImages?: boolean;
@@ -92,10 +90,11 @@ export default function MegaMenu({ config }: MegaMenuProps) {
                           onClick={() => setIsOpen(false)}
                           className="flex items-center gap-3 group/link"
                         >
-                          {showImages && link.image?.asset?._ref && (
+                          {/* 👇 Fixed: link.imageUrl use karein, link.image nahi */}
+                          {showImages && link.imageUrl && (
                             <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0">
                               <Image
-                                src={link.imageUrl} 
+                                src={link.imageUrl}
                                 alt=""
                                 width={32}
                                 height={32}

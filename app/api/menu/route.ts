@@ -1,3 +1,4 @@
+// src/app/api/menu/route.ts
 import { NextResponse } from 'next/server';
 import { fetchClient } from '@/lib/sanityFetch.server';
 import imageUrlBuilder from '@sanity/image-url';
@@ -40,14 +41,14 @@ export async function GET() {
       }
     }
     
-    // 👇 Process mega menu images
+    // 👇 Process mega menu image URLs
     if (data?.settings?.menu?.megaMenu?.columns) {
       data.settings.menu.megaMenu.columns = data.settings.menu.megaMenu.columns.map((col: any) => ({
         ...col,
-        links: col.links?.map((link: any) => ({
+        links: (col.links || []).map((link: any) => ({
           ...link,
           imageUrl: link.image ? urlFor(link.image)?.width(64).height(64).url() : null,
-        })) || [],
+        })),
       }));
     }
     
