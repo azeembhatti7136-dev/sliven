@@ -9,7 +9,7 @@ const builder = imageUrlBuilder({
 
 function urlFor(source: any) {
   if (!source?.asset?._ref) return null;
-  return builder.image(source).width(64).height(64).url();
+  return builder.image(source);
 }
 
 export async function GET() {
@@ -32,13 +32,21 @@ export async function GET() {
       "collections": *[_type == "simpleCollection"] | order(title asc) { _id, title, slug, image }
     }`);
     
-    // 👇 Process image URLs server-side
+    // 👇 Process logo URL
+    if (data?.settings?.menu?.logo) {
+      const logoBuilder = urlFor(data.settings.menu.logo);
+      if (logoBuilder) {
+        data.settings.menu.logoUrl = logoBuilder.width(data.settings.menu.logoWidth || 200).url();
+      }
+    }
+    
+    // 👇 Process mega menu images
     if (data?.settings?.menu?.megaMenu?.columns) {
       data.settings.menu.megaMenu.columns = data.settings.menu.megaMenu.columns.map((col: any) => ({
         ...col,
         links: col.links?.map((link: any) => ({
           ...link,
-          imageUrl: link.image ? urlFor(link.image) : null,
+          imageUrl: link.image ? urlFor(link.image)?.width(64).height(64).url() : null,
         })) || [],
       }));
     }

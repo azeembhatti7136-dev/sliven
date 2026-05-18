@@ -5,8 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, Search, ArrowRight, ChevronDown } from 'lucide-react';
-
-
 import MegaMenu from './MegaMenu';
 
 export default function Header() {
@@ -21,29 +19,29 @@ export default function Header() {
   const headerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Fetch settings + collections
+  // Fetch settings + collections from API
   useEffect(() => {
-  const fetchMenuData = async () => {
-    try {
-      const response = await fetch('/api/menu');
-      if (!response.ok) throw new Error('Failed to fetch menu');
-      const data = await response.json();
-      
-      if (data?.settings?.menu) {
-        setSettings(data.settings.menu);
+    const fetchMenuData = async () => {
+      try {
+        const response = await fetch('/api/menu');
+        if (!response.ok) throw new Error('Failed to fetch menu');
+        const data = await response.json();
+        
+        if (data?.settings?.menu) {
+          setSettings(data.settings.menu);
+        }
+        setCollections(data?.collections || []);
+      } catch (err) {
+        console.error('Header fetch error:', err);
+        setCollections([]);
       }
-      setCollections(data?.collections || []);
-    } catch (err) {
-      console.error('Header fetch error:', err);
-      setCollections([]);
-    }
-  };
-  
-  fetchMenuData();
-}, []);
+    };
+    
+    fetchMenuData();
+  }, []);
 
   // Default values
-  const logo = settings?.logo;
+  const logoUrl = settings?.logoUrl; // 👈 API se processed URL
   const logoText = settings?.logoText || 'SLIVENSPORTS';
   const logoWidth = settings?.logoWidth || 200;
   const navLinks = settings?.links || [];
@@ -114,9 +112,9 @@ export default function Header() {
 
           {/* ───── Logo ───── */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            {logo ? (
+            {logoUrl ? (
               <Image
-                src={urlFor(logo).width(logoWidth).url()}
+                src={logoUrl}
                 alt="Logo"
                 width={logoWidth}
                 height={40}
@@ -143,9 +141,9 @@ export default function Header() {
             ))}
 
             {/* Mega Menu */}
-            {settings?.megaMenu?.enabled && settings?.megaMenu && (
-  <MegaMenu config={settings.megaMenu} />
-)}
+            {megaMenuConfig?.enabled && megaMenuConfig && (
+              <MegaMenu config={megaMenuConfig} />
+            )}
           </nav>
 
           {/* ───── Right Actions ───── */}
