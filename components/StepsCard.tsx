@@ -4,7 +4,16 @@
 import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface Step {
   _key: string;
@@ -74,7 +83,7 @@ export default function StepsCard({ sectionLabel, title, subtitle, steps, backgr
                   </div>
                   {step.icon && (
                     <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center group-hover:bg-amber-50 transition-colors">
-                      <Image src={urlFor(step.icon).width(48).height(48).url()} alt="" width={32} height={32} className="object-contain" />
+                      <Image src={getImageUrl(step.icon, 48, 48)} alt="" width={32} height={32} className="object-contain" />
                     </div>
                   )}
                 </div>

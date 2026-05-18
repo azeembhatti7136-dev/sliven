@@ -5,7 +5,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Package } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface Collection {
   _id: string;
@@ -59,7 +68,7 @@ export default function FeaturedCollections({
         >
           {collections[0].image ? (
             <Image
-              src={urlFor(collections[0].image).width(800).height(600).url()}
+              src={getImageUrl(collections[0].image, 800, 600)}
               alt={collections[0].title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -126,7 +135,7 @@ export default function FeaturedCollections({
       >
         {collection.image ? (
           <Image
-            src={urlFor(collection.image).width(600).height(400).url()}
+            src={getImageUrl(collection.image, 600, 400)}
             alt={collection.title}
             fill
             className="object-cover group-hover:scale-110 transition-transform duration-700"

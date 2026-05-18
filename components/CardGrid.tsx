@@ -5,7 +5,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface Card {
   _key: string;
@@ -103,7 +112,7 @@ function CardItem({ card, index, isDark }: { card: Card; index: number; isDark: 
         <div className="relative w-16 h-16 sm:w-20 sm:h-20">
           {card.image ? (
             <Image
-              src={urlFor(card.image).width(100).url()}
+              src={getImageUrl(card.image, 100)}
               alt={card.imageAlt || card.cardTitle}
               fill
               sizes="80px"

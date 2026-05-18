@@ -5,7 +5,16 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { Star, Quote } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface TestimonialItem {
   _key: string;
@@ -120,7 +129,7 @@ export default function Testimonial({ sectionLabel, title, subtitle, testimonial
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-amber-100 to-orange-100 flex-shrink-0">
                     {item.avatar ? (
-                      <Image src={urlFor(item.avatar).width(80).height(80).url()} alt={item.name} fill className="object-cover" sizes="48px" />
+                      <Image src={getImageUrl(item.avatar, 80, 80)} alt={item.name} fill className="object-cover" sizes="48px" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-amber-600 font-bold text-lg">
                         {item.name.charAt(0)}

@@ -6,7 +6,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface PartnerLogo {
   _key: string;
@@ -133,7 +142,7 @@ export default function PartnerSlider({ sectionLabel, title, subtitle, logos, ba
         {logo.link ? (
           <Link href={logo.link} target="_blank" className="w-full h-full flex items-center justify-center">
             <Image
-              src={urlFor(logo.image).width(300).url()}
+              src={getImageUrl(logo.image, 300)}
               alt={logo.name || 'Partner logo'}
               width={200}
               height={80}
@@ -144,7 +153,7 @@ export default function PartnerSlider({ sectionLabel, title, subtitle, logos, ba
           </Link>
         ) : (
           <Image
-            src={urlFor(logo.image).width(300).url()}
+            src={getImageUrl(logo.image, 300)}
             alt={logo.name || 'Partner logo'}
             width={200}
             height={80}

@@ -4,7 +4,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface GalleryImage {
   _key: string;
@@ -116,7 +125,7 @@ export default function ImageLightbox({
         onClick={() => setIsZoomed(!isZoomed)}
       >
         <Image
-          src={urlFor(currentImage).width(1920).height(1080).url()}
+          src={getImageUrl(currentImage, 1920, 1080)}
           alt={currentImage.alt || `Gallery image ${currentIndex + 1}`}
           fill
           className={`object-contain transition-transform duration-500 ${
@@ -162,7 +171,7 @@ export default function ImageLightbox({
               }`}
             >
               <Image
-                src={urlFor(image).width(80).height(80).url()}
+                src={getImageUrl(image, 80, 80)}
                 alt={image.alt || `Thumbnail ${index + 1}`}
                 width={40}
                 height={40}

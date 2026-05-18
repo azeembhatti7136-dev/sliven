@@ -5,7 +5,27 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+// ❌ DELETE: function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
+
+// 👇 Safe image URL function (no @sanity imports)
+function getImageUrl(image: any, width: number = 600, height: number = 400): string {
+  if (!image?.asset?._ref) return '';
+  const ref = image.asset._ref;
+  const match = ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${height}.${fmt}`;
+}
 
 interface TimelineStep {
   _key: string;
@@ -13,6 +33,7 @@ interface TimelineStep {
   title: string;
   description?: string;
   image?: any;
+  imageUrl?: string; // 👈 ADD pre-processed URL option
 }
 
 interface TimelineProps {
@@ -98,7 +119,7 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
                   {step.image && (
                     <div className="relative h-44 lg:h-52 rounded-2xl overflow-hidden mb-5 group-hover:shadow-md transition-shadow">
                       <Image
-                        src={urlFor(step.image).width(600).height(400).url()}
+                        src={step.imageUrl || getImageUrl(step.image, 600, 400)} // 👈 Safe URL
                         alt={step.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-700"

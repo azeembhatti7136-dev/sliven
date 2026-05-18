@@ -5,7 +5,16 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Play, Pause } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface VideoWithTextProps {
   title?: string;
@@ -85,7 +94,7 @@ export default function VideoWithText({
             <>
               {videoThumbnail ? (
                 <Image
-                  src={urlFor(videoThumbnail).width(800).height(450).url()}
+                  src={getImageUrl(videoThumbnail, 800, 450)}
                   alt="Video thumbnail"
                   fill
                   className="object-cover"

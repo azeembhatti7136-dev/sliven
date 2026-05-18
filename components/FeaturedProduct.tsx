@@ -6,7 +6,16 @@ import Link from 'next/link';
 import { ArrowRight, Check, Star, ShoppingCart } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
 import QuoteButton from './QuoteButton';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 import { PortableText } from '@portabletext/react';
 
 interface Product {
@@ -200,7 +209,7 @@ export default function FeaturedProduct({
       <div className="relative w-full h-full rounded-2xl overflow-hidden">
         {product.images?.[0] ? (
           <Image
-            src={urlFor(product.images[0]).width(800).height(800).url()}
+            src={getImageUrl(product.images[0], 800, 800)}
             alt={productName}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"

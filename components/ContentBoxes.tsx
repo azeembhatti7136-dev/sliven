@@ -5,7 +5,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface Box {
   _key: string;
@@ -136,7 +145,7 @@ function ContentBoxItem({ box, index, isDarkSection }: { box: Box; index: number
           {box.image ? (
             <div className="relative w-full aspect-square max-w-[80px]">
               <Image
-                src={urlFor(box.image).width(120).url()}
+                src={getImageUrl(box.image, 120)}
                 alt={box.imageAlt || 'Content image'}
                 fill
                 sizes="10vw"

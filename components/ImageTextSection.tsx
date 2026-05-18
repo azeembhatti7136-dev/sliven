@@ -5,7 +5,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
-import { urlFor } from '@/lib/sanity';
+function getImageUrl(image: any, width: number = 800, height?: number): string {
+  if (!image?.asset?._ref) return '';
+  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
+  if (!match) return '';
+  const id = match[1];
+  const fmt = match[3] || 'jpg';
+  const h = height || Math.round(width * 0.75);
+  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
+}
+
 
 interface ImageTextItem {
   _key: string;
@@ -47,7 +56,7 @@ export default function ImageTextSection({
       {backgroundImage && (
         <div className="absolute inset-0 z-0">
           <Image
-            src={urlFor(backgroundImage).width(1920).height(1080).url()}
+            src={getImageUrl(backgroundImage, 1920, 1080)}
             alt="Section background"
             fill
             className="object-cover"
@@ -152,7 +161,7 @@ function ImageTextItem({
       <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
         {section.image && (
           <Image
-            src={urlFor(section.image).width(800).height(600).url()}
+            src={getImageUrl(section.image, 800, 600)}
             alt={section.imageAlt || 'Section image'}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
