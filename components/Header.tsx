@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, Search, ArrowRight, ChevronDown } from 'lucide-react';
 import { urlFor } from '@/lib/sanity';
-import { fetchClient } from '@/lib/sanityFetch';
+
 import MegaMenu from './MegaMenu';
 
 export default function Header() {
@@ -23,34 +23,24 @@ export default function Header() {
 
   // Fetch settings + collections
   useEffect(() => {
-    fetchClient.fetch(`{
-      "settings": *[_type == "settings"][0] {
-        menu {
-          logo, logoText, logoWidth,
-          megaMenu {
-            enabled, title, showImages, viewAllText, viewAllUrl,
-            columns[] {
-              _key, title,
-              links[] { label, url, image }
-            }
-          },
-          links[] { label, url },
-          headerStyle { backgroundColor, sticky, showSearch, showCTA, ctaText, ctaUrl }
-        }
-      },
-      "collections": *[_type == "simpleCollection"] | order(title asc) { _id, title, slug, image }
-    }`)
-    .then((data: any) => {
+  const fetchMenuData = async () => {
+    try {
+      const response = await fetch('/api/menu');
+      if (!response.ok) throw new Error('Failed to fetch menu');
+      const data = await response.json();
+      
       if (data?.settings?.menu) {
         setSettings(data.settings.menu);
       }
       setCollections(data?.collections || []);
-    })
-    .catch((err) => {
+    } catch (err) {
       console.error('Header fetch error:', err);
       setCollections([]);
-    });
-  }, []);
+    }
+  };
+  
+  fetchMenuData();
+}, []);
 
   // Default values
   const logo = settings?.logo;

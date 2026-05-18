@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  
+  // 👇 Sanity packages ko client bundle se exclude karein
+  serverExternalPackages: ['@sanity/client', '@sanity/image-url'],
 };
 
 export default nextConfig;
