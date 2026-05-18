@@ -1,5 +1,5 @@
 // src/app/about/page.tsx
-import { client } from '@/lib/sanity';
+import { client } from '@/lib/sanityClient.server';
 import Image from 'next/image';
 import { PortableText } from '@portabletext/react';
 import { urlFor } from '@/lib/sanity';

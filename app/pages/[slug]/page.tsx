@@ -1,6 +1,6 @@
 // src/app/pages/[slug]/page.tsx
 import { PortableText } from '@portabletext/react';
-import { client } from '@/lib/sanity';
+import { client } from '@/lib/sanityClient.server';
 import { notFound } from 'next/navigation';
 import Hero from '@/components/Hero';
 import VideoWithText from '@/components/VideoWithText';

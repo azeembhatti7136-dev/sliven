@@ -1,5 +1,5 @@
 // src/app/collections/[slug]/page.tsx
-import { client } from '@/lib/sanity';
+import { client } from '@/lib/sanityClient.server';
 import ProductCard from '@/components/ProductCard';
 import Hero from '@/components/Hero';
 import VideoWithText from '@/components/VideoWithText';

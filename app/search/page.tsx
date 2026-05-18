@@ -1,5 +1,5 @@
 // src/app/search/page.tsx
-import { client } from '@/lib/sanity';
+import { client } from '@/lib/sanityClient.server';
 import ProductCard from '@/components/ProductCard';
 
 export const dynamic = 'force-dynamic';

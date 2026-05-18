@@ -1,6 +1,6 @@
 // src/app/page.tsx
 
-import { client } from '@/lib/sanity';
+import { client } from '@/lib/sanityClient.server';
 
 import Hero from '@/components/Hero';
 import Link from 'next/link';

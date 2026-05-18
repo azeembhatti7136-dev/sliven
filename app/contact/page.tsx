@@ -1,5 +1,5 @@
 // src/app/contact/page.tsx
-import { client } from '@/lib/sanity';
+import { client } from '@/lib/sanityClient.server';
 import Image from 'next/image';
 import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 import { urlFor } from '@/lib/sanity';
