@@ -1,7 +1,7 @@
 // src/lib/actions.ts
 'use server';
 
-import { client } from './sanity';
+import { client } from './sanityClient.server';
 
 export async function submitQuoteRequest(data: any, productId: string) {
   try {
