@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { Menu, X, Search, ArrowRight, ChevronDown } from 'lucide-react';
 import { urlFor } from '@/lib/sanity';
 import { client } from '@/lib/sanity';
+import MegaMenu from './MegaMenu';
+
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -184,34 +186,7 @@ export default function Header() {
               </div>
             ))}
 
-            {/* Mega Menu */}
-            {showMegaMenu && (
-              <div ref={collectionRef} className="relative" onMouseEnter={() => handleCollectionHover(true)} onMouseLeave={() => handleCollectionHover(false)}>
-                <button className={`px-4 py-2 text-base font-medium ${navTextClass} ${textHoverClass} ${bgHoverClass} rounded-lg transition-all flex items-center gap-1`}>
-                  {megaMenuTitle}
-                  <ChevronDown className={`w-4 h-4 transition-transform ${isCollectionOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isCollectionOpen && collections.length > 0 && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50">
-                    <div className="py-2 max-h-[400px] overflow-y-auto">
-                      {collections.map((col: any) => (
-                        <Link key={col._id} href={`/collections/${col.slug?.current}`} onClick={() => setIsCollectionOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
-                        >
-                          {col.image ? <Image src={urlFor(col.image).width(48).height(48).url()} alt={col.title} width={32} height={32} className="rounded-lg object-cover" /> : <div className="w-8 h-8 rounded-lg bg-gray-700 flex items-center justify-center text-xs text-gray-400">{col.title?.charAt(0)}</div>}
-                          <span className="truncate">{col.title}</span>
-                        </Link>
-                      ))}
-                    </div>
-                    <Link href="/collections" onClick={() => setIsCollectionOpen(false)}
-                      className="block text-center px-4 py-3 text-sm font-medium text-amber-400 hover:text-amber-300 bg-gray-800 border-t border-gray-700 transition-all"
-                    >
-                      View All Collections →
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
+            <MegaMenu config={settings?.megaMenu} />
           </nav>
 
           {/* Right Actions */}
