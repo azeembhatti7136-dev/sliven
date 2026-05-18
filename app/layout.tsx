@@ -58,8 +58,9 @@ export default async function RootLayout({
           links={settings?.footer?.links}
           text={settings?.footer?.text}
         />
-        <ToastProvider />
-        <FloatingButtons />
+        {/* <ToastProvider />
+<FloatingButtons /> 
+*/}
       </body>
     </html>
   );
