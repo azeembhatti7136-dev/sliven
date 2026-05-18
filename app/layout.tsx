@@ -4,7 +4,8 @@ import './globals.css';
 import ToastProvider from '@/components/ToastProvider';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { client } from '@/lib/sanity';
+import { client } from '@/lib/sanityClient.server';
+
 import FloatingButtons from '@/components/FloatingButtons';
 
 async function getSettings() {
@@ -55,6 +56,8 @@ export default async function RootLayout({
         <Header /> 
         {children}
         <Footer 
+          logoUrl={logoUrl} // 👈 URL pass karo
+          logoText={settings?.logoText}
           links={settings?.footer?.links}
           text={settings?.footer?.text}
         />
