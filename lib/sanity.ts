@@ -12,7 +12,6 @@ interface ImageBuilder {
   quality: (q: number) => ImageBuilder;
 }
 
-// Dummy builder for invalid images
 const dummyBuilder: ImageBuilder = {
   url: () => '/placeholder.png',
   width: () => dummyBuilder,
@@ -31,14 +30,19 @@ export function urlFor(source: any): ImageBuilder {
   const ref = getRef();
   if (!ref) return dummyBuilder;
 
-  // ref format: image-{id}-{width}x{height}-{format}
-  const parts = ref.split('-');
-  const id = parts[1];
-  const format = parts[3] || 'jpg';
+  // ref format: image-{id}-{WIDTH}x{HEIGHT}-{format}
+  // ID can contain hyphens! Eg: image-d4b32bdcb36c48b9db9453164f6f7e22167e7b90-1920x600-jpg
+  const match = ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
   
+  if (!match) return dummyBuilder;
+  
+  const id = match[1];    // d4b32bdcb36c48b9db9453164f6f7e22167e7b90
+  const dims = match[2];  // 1920x600
+  const fmt = match[3];   // jpg
+
   let w = 800;
   let h = 600;
-  let f = format;
+  let f = fmt;
   let q = 80;
 
   const buildUrl = (): string => 

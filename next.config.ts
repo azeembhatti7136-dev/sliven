@@ -12,8 +12,15 @@ const nextConfig: NextConfig = {
     ],
   },
   
-  // 👇 Sanity packages ko client bundle se exclude karein
-  serverExternalPackages: ['@sanity/client', '@sanity/image-url'],
+  // 👇 ALL Sanity packages ko client bundle se exclude karein
+  serverExternalPackages: [
+    '@sanity/client',
+    '@sanity/image-url',
+    'next-sanity',
+    'sanity',
+    '@sanity/visual-editing',
+    '@sanity/preview-url-secret',
+  ],
 };
 
 export default nextConfig;
