@@ -32,24 +32,23 @@ interface FooterProps {
 export default function Footer({
   logo,
   logoText,
-  logoUrl,
+  logoUrl, // 👈 ADD THIS
   description,
   columns,
   bottomText,
   text,
   links,
   socialLinks,
-}: FooterProps & { logoUrl?: string }) {
-   return (
+}: FooterProps) {
+  return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
-          {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block mb-6">
-              {logoUrl ? ( // 👈 logoUrl use karo
+              {logoUrl ? ( // 👈 CHANGE: logo -> logoUrl
                 <Image
-                  src={logoUrl}
+                  src={logoUrl} // 👈 CHANGE
                   alt="Logo"
                   width={120}
                   height={40}
