@@ -7,21 +7,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, Search, ArrowRight, ChevronDown } from 'lucide-react';
 import { urlFor } from '@/lib/sanity';
-
-interface SubLink {
-  _key: string;
-  label?: string;
-  link?: string;
-  url?: string;
-}
+import { client } from '@/lib/sanity';
 
 interface MenuLink {
   _key: string;
-  _type?: string;         // 👈 ADD
   label?: string;
   link?: string;
   url?: string;
-  childLinks?: SubLink[];
+  childLinks?: MenuLink[];
 }
 
 interface HeaderProps {
@@ -33,29 +26,38 @@ interface HeaderProps {
 export default function Header({ menu, logo, logoText }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isCollectionOpen, setIsCollectionOpen] = useState(false);
+  const [collections, setCollections] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const collectionRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const closeTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const navLinks = menu?.links?.filter(link => {
-  // Dropdown - has label and childLinks
-  if (link._type === 'dropdownMenu' && link.label && link.childLinks?.length) return true;
-  // Regular link - has label and (link or url)
-  if (link.label && (link.link || link.url)) return true;
-  return false;
-}) || [];
+  const navLinks = menu?.links?.filter(link => link.label && (link.link || link.url)) || [];
+  const getHref = (link: MenuLink) => link.link || link.url || '/';
 
-const getHref = (link: MenuLink | SubLink) => (link as any).link || (link as any).url || '/';
+  // Fetch collections
+  useEffect(() => {
+    client.fetch(`*[_type == "simpleCollection"] | order(title asc) { _id, title, slug, image }`)
+      .then(setCollections)
+      .catch(() => setCollections([]));
+  }, []);
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) searchInputRef.current.focus();
   }, [isSearchOpen]);
 
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') { setIsSearchOpen(false); setIsMobileMenuOpen(false); setOpenDropdown(null); } };
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setIsMobileMenuOpen(false);
+        setIsCollectionOpen(false);
+      }
+    };
     document.addEventListener('keydown', handleEsc);
     return () => document.removeEventListener('keydown', handleEsc);
   }, []);
@@ -65,6 +67,7 @@ const getHref = (link: MenuLink | SubLink) => (link as any).link || (link as any
       const target = e.target as Node;
       if (searchContainerRef.current && !searchContainerRef.current.contains(target)) setIsSearchOpen(false);
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(target)) setIsMobileMenuOpen(false);
+      if (collectionRef.current && !collectionRef.current.contains(target)) setIsCollectionOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('touchstart', handleClickOutside);
@@ -83,6 +86,15 @@ const getHref = (link: MenuLink | SubLink) => (link as any).link || (link as any
     }
   };
 
+  const handleCollectionHover = (open: boolean) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (open) {
+      setIsCollectionOpen(true);
+    } else {
+      closeTimer.current = setTimeout(() => setIsCollectionOpen(false), 200);
+    }
+  };
+
   return (
     <header className="bg-black border-b border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,81 +106,75 @@ const getHref = (link: MenuLink | SubLink) => (link as any).link || (link as any
               <Image src={urlFor(logo).width(240).height(80).url()} alt="Logo" width={240} height={80} className="h-16 w-auto" />
             ) : (
               <span className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                {logoText || 'Quotify'}
+                {logoText || 'SLIVENSPORTS'}
               </span>
             )}
           </Link>
 
           {/* Desktop Navigation */}
-          {navLinks.length > 0 && (
-            <nav className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <div key={link._key} className="relative">
-                  {/* Has Sub-links? */}
-                  {link.childLinks && link.childLinks.length > 0 ? (
-                    <>
-                      <button
-                        onClick={() => setOpenDropdown(openDropdown === link._key ? null : link._key)}
-                        onMouseEnter={() => setOpenDropdown(link._key)}
-                        onMouseLeave={() => setOpenDropdown(null)}
-                        className={`px-4 py-2 text-base font-medium rounded-lg transition-all duration-200 flex items-center gap-1 ${
-                          openDropdown === link._key ? 'text-white bg-gray-800' : 'text-gray-300 hover:text-white hover:bg-gray-800'
-                        }`}
-                      >
-                        {link.label}
-                        <ChevronDown className={`w-4 h-4 transition-transform ${openDropdown === link._key ? 'rotate-180' : ''}`} />
-                      </button>
+          <nav className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link key={link._key} href={getHref(link)} className="px-4 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all">
+                {link.label || 'Link'}
+              </Link>
+            ))}
 
-                      {/* Dropdown */}
-                      {openDropdown === link._key && (
-                        <div
-                          className="absolute top-full left-0 mt-1 w-56 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl py-2 z-50"
-                          onMouseEnter={() => setOpenDropdown(link._key)}
-                          onMouseLeave={() => setOpenDropdown(null)}
-                        >
-                          {link.childLinks.map((sub) => (
-                            <Link
-                              key={sub._key}
-                              href={getHref(sub)}
-                              onClick={() => setOpenDropdown(null)}
-                              className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-all mx-1 rounded-lg"
-                            >
-                              {sub.label}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <Link
-                      href={getHref(link)}
-                      className="px-4 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all duration-200"
-                    >
-                      {link.label}
-                    </Link>
-                  )}
+            {/* Collections Dropdown */}
+            <div
+              ref={collectionRef}
+              className="relative"
+              onMouseEnter={() => handleCollectionHover(true)}
+              onMouseLeave={() => handleCollectionHover(false)}
+            >
+              <button
+                className="px-4 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all flex items-center gap-1"
+              >
+                Collections
+                <ChevronDown className={`w-4 h-4 transition-transform ${isCollectionOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isCollectionOpen && collections.length > 0 && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200">
+                  <div className="py-2">
+                    {collections.map((col) => (
+                      <Link
+                        key={col._id}
+                        href={`/collections/${col.slug?.current}`}
+                        onClick={() => setIsCollectionOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
+                      >
+                        {col.image ? (
+                          <Image src={urlFor(col.image).width(48).height(48).url()} alt={col.title} width={32} height={32} className="rounded-lg object-cover" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-gray-700 flex items-center justify-center text-xs text-gray-400">
+                            {col.title?.charAt(0)}
+                          </div>
+                        )}
+                        <span className="truncate">{col.title}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  <Link
+                    href="/collections"
+                    onClick={() => setIsCollectionOpen(false)}
+                    className="block text-center px-4 py-3 text-sm font-medium text-amber-400 hover:text-amber-300 bg-gray-800 border-t border-gray-700 transition-all"
+                  >
+                    View All Collections →
+                  </Link>
                 </div>
-              ))}
-            </nav>
-          )}
+              )}
+            </div>
+          </nav>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => { setIsSearchOpen(!isSearchOpen); setIsMobileMenuOpen(false); }}
-              className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
-            >
+            <button onClick={() => { setIsSearchOpen(!isSearchOpen); setIsMobileMenuOpen(false); }} className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 transition-all">
               <Search className="w-5 h-5" />
             </button>
-
             <Link href="/products" className="hidden lg:inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-base font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg">
               Get Quote
             </Link>
-
-            <button
-              onClick={() => { setIsMobileMenuOpen(!isMobileMenuOpen); setIsSearchOpen(false); }}
-              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl text-gray-300 hover:text-white hover:bg-gray-800"
-            >
+            <button onClick={() => { setIsMobileMenuOpen(!isMobileMenuOpen); setIsSearchOpen(false); }} className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl text-gray-300 hover:text-white hover:bg-gray-800">
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
@@ -185,11 +191,6 @@ const getHref = (link: MenuLink | SubLink) => (link as any).link || (link as any
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </form>
-              <div className="flex gap-2 mt-3 flex-wrap">
-                {['T-Shirts', 'Hoodies', 'Custom Apparel', 'Teamwear'].map((s) => (
-                  <button key={s} onClick={() => setSearchQuery(s)} className="px-3 py-1.5 text-sm text-gray-400 bg-gray-800 rounded-full hover:bg-amber-500/20 hover:text-amber-400 transition-all">{s}</button>
-                ))}
-              </div>
             </div>
           </div>
         )}
@@ -199,16 +200,20 @@ const getHref = (link: MenuLink | SubLink) => (link as any).link || (link as any
           <div ref={mobileMenuRef} className="lg:hidden border-t border-gray-800 py-4 bg-black">
             <nav className="flex flex-col gap-1">
               {navLinks.map((link) => (
-                <div key={link._key}>
-                  {link.childLinks && link.childLinks.length > 0 ? (
-                    <MobileDropdown link={link} onClose={() => setIsMobileMenuOpen(false)} />
-                  ) : (
-                    <Link href={getHref(link)} onClick={() => setIsMobileMenuOpen(false)} className="block px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg">
-                      {link.label}
-                    </Link>
-                  )}
-                </div>
+                <Link key={link._key} href={getHref(link)} onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg">
+                  {link.label || 'Link'}
+                </Link>
               ))}
+              {/* Mobile Collections */}
+              <div className="px-4 py-2 text-sm font-semibold text-gray-400 uppercase">Collections</div>
+              {collections.slice(0, 6).map((col) => (
+                <Link key={col._id} href={`/collections/${col.slug?.current}`} onClick={() => setIsMobileMenuOpen(false)} className="px-6 py-2 text-base text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg">
+                  {col.title}
+                </Link>
+              ))}
+              <Link href="/collections" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-2 text-sm text-amber-400 hover:text-amber-300">
+                View All Collections →
+              </Link>
               <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="mt-2 text-center px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-base font-semibold rounded-xl">
                 Get Quote
               </Link>
@@ -217,36 +222,5 @@ const getHref = (link: MenuLink | SubLink) => (link as any).link || (link as any
         )}
       </div>
     </header>
-  );
-}
-
-// Mobile Dropdown Component
-function MobileDropdown({ link, onClose }: { link: MenuLink; onClose: () => void }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg"
-      >
-        {link.label}
-        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      {isOpen && link.childLinks && (
-        <div className="ml-4 space-y-1 py-1">
-          {link.childLinks.map((sub) => (
-            <Link
-              key={sub._key}
-              href={(sub as any).link || (sub as any).url || '/'}
-              onClick={onClose}
-              className="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg"
-            >
-              {sub.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
