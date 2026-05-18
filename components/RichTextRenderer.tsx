@@ -4,7 +4,7 @@
 import { PortableText } from '@portabletext/react';
 import Image from 'next/image';
 import Link from 'next/link';
-// ❌ DELETE: function getImageUrl(image: any, width: number = 800, height?: number): string {
+function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
   const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
   if (!match) return '';
