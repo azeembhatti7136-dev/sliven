@@ -52,7 +52,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans">
-        <Header menu={settings?.menu} logo={settings?.logo} logoText={settings?.logoText} />
+        <Header /> 
         {children}
         <Footer 
           links={settings?.footer?.links}
