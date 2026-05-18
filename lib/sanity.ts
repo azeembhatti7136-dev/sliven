@@ -1,6 +1,6 @@
 // src/lib/sanity.ts
 import { createClient } from '@sanity/client';
-import imageUrlBuilder from '@sanity/image-url';
+import { createImageUrlBuilder } from '@sanity/image-url'; // 👈 Named export use kiya
 
 export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -10,11 +10,15 @@ export const client = createClient({
   token: process.env.NEXT_PUBLIC_SANITY_WRITE_TOKEN, 
 });
 
-const builder = imageUrlBuilder(client);
+// 👈 client ko as an argument pass karne ke bajay config object pass karein
+const builder = createImageUrlBuilder({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'd2zeiu5j',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+});
 
 export function urlFor(source: any) {
   // If source is invalid, return builder with a valid dummy image
-  if (!source?.asset?._ref) {
+  if (!source?.asset?._ref && !source?._ref) {
     return builder.image({
       _type: 'image',
       asset: {

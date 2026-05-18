@@ -42,8 +42,11 @@ useEffect(() => {
     },
     "collections": *[_type == "simpleCollection"] | order(title asc) { _id, title, slug, image }
   }`).then((data: any) => {
-    setSettings(data?.settings?.menu);
-    setCollections(data?.collections || []);
+  if (data?.settings?.menu) {
+    setSettings(data.settings.menu);
+  }
+  setCollections(data?.collections || []);
+})
   }).catch((err) => {
     console.error('Header fetch error:', err);
     setCollections([]);
