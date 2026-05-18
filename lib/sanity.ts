@@ -11,18 +11,19 @@ export const client = createClient({
   dataset,
   apiVersion: '2024-01-01',
   useCdn: false,
-  token: token || undefined, // 👈 Empty string → undefined
+  token: token || undefined,
 });
 
 const builder = imageUrlBuilder(client);
 
 export function urlFor(source: any) {
+  // 👇 Always return builder - even for invalid images
   if (!source?.asset?._ref) {
+    // Return a dummy builder that won't crash
     return {
-      url: () => '/placeholder.png',
-      width: () => 800,
-      height: () => 800,
-    };
+      ...builder.image({ _type: 'image', asset: { _ref: 'image-placeholder' } }),
+      url: () => 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" fill="%23f3f4f6"><rect width="800" height="600"/></svg>',
+    } as any;
   }
   return builder.image(source);
 }
