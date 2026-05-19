@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Package } from 'lucide-react';
-import { urlFor } from '@/lib/sanity'; // 👈 Centralized super safe wrapper use kiya
+import { urlFor } from '@/lib/sanity';
 
 interface GalleryImage {
   _key: string;
@@ -74,11 +74,11 @@ export default function ImageLightbox({
 
   const currentImage = images[currentIndex];
 
-  // ───── Safe Main High-Res Image URL Builder ─────
+  // ───── Fixed & Type-Safe Main High-Res Image URL Builder ─────
   let mainLightboxUrl = '';
   if (currentImage) {
     try {
-      mainLightboxUrl = typeof currentImage === 'string' && currentImage.startsWith('http')
+      mainLightboxUrl = typeof currentImage === 'string' && (currentImage as any).startsWith('http')
         ? currentImage
         : urlFor(currentImage).width(1920).height(1080).url();
     } catch (err) {
@@ -166,11 +166,11 @@ export default function ImageLightbox({
       {images.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-2 z-20">
           {images.map((image, index) => {
-            // ───── Safe Thumbnail Image URL Builder ─────
+            // ───── Fixed & Type-Safe Thumbnail Image URL Builder ─────
             let thumbUrl = '';
             if (image) {
               try {
-                thumbUrl = typeof image === 'string' && image.startsWith('http')
+                thumbUrl = typeof image === 'string' && (image as any).startsWith('http')
                   ? image
                   : urlFor(image).width(80).height(80).url();
               } catch (err) {
