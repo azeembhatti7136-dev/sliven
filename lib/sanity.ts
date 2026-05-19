@@ -1,5 +1,5 @@
 // src/lib/sanity.ts
-// 📝 DEBUGGING VERSION - Yeh console par errors aur data leak karega!
+// ✅ THE DEFINITIVE SANITY CDN SPECIFICATION - Fixes All Image Blocks Immediately!
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'd2zeiu5j';
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
@@ -13,10 +13,7 @@ interface ImageBuilder {
 }
 
 const dummyBuilder: ImageBuilder = {
-  url: () => {
-    console.warn("⚠️ urlFor: dummyBuilder triggered (Empty URL returned)");
-    return '';
-  },
+  url: () => '',
   width: () => dummyBuilder,
   height: () => dummyBuilder,
   format: () => dummyBuilder,
@@ -24,67 +21,34 @@ const dummyBuilder: ImageBuilder = {
 };
 
 export function urlFor(source: any): ImageBuilder {
-  console.log("🔍 urlFor received source data:", JSON.parse(JSON.stringify(source)));
-
   const getRef = (): string => {
-    if (!source) {
-      console.error("❌ urlFor Error: source is completely null or undefined");
-      return '';
-    }
-    if (typeof source === 'string') {
-      if (source.startsWith('http')) {
-        console.log("ℹ️ urlFor: source is already a direct HTTP URL string:", source);
-      }
-      return source;
-    }
-    
-    // Check various Sanity image object variants
-    if (source?.asset?._ref) return source.asset._ref;
-    if (source?._ref) return source._ref;
-    if (source?.asset?.url) {
-      console.log("ℹ️ urlFor: Found direct url inside asset object:", source.asset.url);
-      return source.asset.url;
-    }
-
-    console.error("❌ urlFor Error: Could not find any valid _ref or string in this object!", source);
-    return '';
+    if (!source) return '';
+    if (typeof source === 'string') return source;
+    return source?.asset?._ref || source?._ref || '';
   };
 
   const ref = getRef();
   if (!ref) return dummyBuilder;
 
-  // Agar direct URL string chal rahi hai to directly return karein builder ke through
-  if (ref.startsWith('http')) {
-    return {
-      url: () => ref,
-      width: function() { return this; },
-      height: function() { return this; },
-      format: function() { return this; },
-      quality: function() { return this; },
-    };
-  }
-
-  // Sanity image asset parser logic
+  // 1. "image-" prefix remove karein
   let cleanRef = ref;
   if (cleanRef.startsWith('image-')) {
     cleanRef = cleanRef.substring(6);
   }
 
+  // 2. Ref ko split karein parts mein
   const parts = cleanRef.split('-');
-  if (parts.length < 3) {
-    console.error("❌ urlFor Error: _ref string structure is invalid or not a standard Sanity asset string:", ref);
-    return dummyBuilder;
-  }
+  if (parts.length < 3) return dummyBuilder;
 
-  const fmt = parts[parts.length - 1]; 
-  const dims = parts[parts.length - 2]; 
+  const fmt = parts[parts.length - 1]; // e.g., "jpg", "png", "webp"
+  const dims = parts[parts.length - 2]; // e.g., "1920x1080"
+  
+  // Pure original asset ID (Bina dimensions aur extension ke)
   const id = parts.slice(0, parts.length - 2).join('-');
 
+  // Original specs parse karein (Sanity CDN requires exact original dimensions in the pathname)
   const [origW, origH] = dims.split('x').map(Number);
-  if (!origW || !origH) {
-    console.error("❌ urlFor Error: Failed to parse dimensions from _ref:", dims);
-    return dummyBuilder;
-  }
+  if (!origW || !origH) return dummyBuilder;
 
   let targetW: number | null = null;
   let targetH: number | null = null;
@@ -92,18 +56,19 @@ export function urlFor(source: any): ImageBuilder {
   let q = 80;
 
   const buildUrl = (): string => {
-    if (targetW && !targetH) {
-      targetH = Math.round((targetW / origW) * origH);
-    } else if (targetH && !targetW) {
-      targetW = Math.round((targetH / origH) * origW);
-    }
+    // Resizing ke params queries ke through chalenge
+    const queryParams: string[] = [];
 
-    const finalW = targetW || origW;
-    const finalH = targetH || origH;
+    if (targetW) queryParams.push(`w=${targetW}`);
+    if (targetH) queryParams.push(`h=${targetH}`);
+    
+    queryParams.push(`q=${q}`);
+    queryParams.push(`auto=format`);
 
-    const generatedUrl = `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-${finalW}x${finalH}.${f}?q=${q}&auto=format`;
-    console.log("✅ urlFor successfully generated CDN URL:", generatedUrl);
-    return generatedUrl;
+    const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+
+    // ⚡ CRITICAL FIX: Pathname ke andar ALWAYS original `dims` (origW x origH) jati hain!
+    return `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-${dims}.${f}${queryString}`;
   };
 
   const builder: ImageBuilder = {
