@@ -1,4 +1,3 @@
-// src/components/ContactForm.tsx
 'use client';
 
 import { useState } from 'react';
@@ -11,18 +10,8 @@ import {
   MessageSquare, User, AtSign, FileText 
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { urlFor } from '@/lib/sanity'; // ⚡ Native builder tool integration
 import RichTextRenderer from './RichTextRenderer';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
-// âŒ DELETE: import { client } from '@/lib/sanity';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -39,7 +28,7 @@ interface ContactFormProps {
   title: any;
   subtitle?: string;
   contactImage?: any;
-  contactImageUrl?: string; // ðŸ‘ˆ ADD
+  contactImageUrl?: string; 
   backgroundColor?: string;
   showInfo?: boolean;
   email?: string;
@@ -52,7 +41,7 @@ export default function ContactForm({
   title,
   subtitle,
   contactImage,
-  contactImageUrl, // ðŸ‘ˆ ADD
+  contactImageUrl, 
   backgroundColor = '#f9fafb',
   showInfo = true,
   email,
@@ -71,7 +60,7 @@ export default function ContactForm({
     resolver: zodResolver(contactSchema),
   });
 
-  const isDark = backgroundColor === '#111827';
+  const isDark = backgroundColor === '#111827' || backgroundColor === '#000000';
   const textColor = isDark ? 'text-white' : 'text-gray-900';
   const subtitleColor = isDark ? 'text-gray-300' : 'text-gray-600';
   const inputBg = isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900';
@@ -81,7 +70,6 @@ export default function ContactForm({
     setIsSubmitting(true);
 
     try {
-      // ðŸ‘‡ API route se Sanity mein data save karo
       const response = await fetch('/api/submit-contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,7 +79,7 @@ export default function ContactForm({
       if (!response.ok) throw new Error('Failed to submit');
 
       setIsSuccess(true);
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      toast.success("Message sent successfully! We'll get back to you soon.");
       
       setTimeout(() => {
         setIsSuccess(false);
@@ -104,6 +92,14 @@ export default function ContactForm({
       setIsSubmitting(false);
     }
   };
+
+  // 👇 Safe Hybrid Image Link Resolver (Tries direct URL first, then builds from object natively)
+  const hasImageObj = contactImage && (contactImage.asset || contactImage._ref);
+  const resolvedContactImg = contactImageUrl 
+    ? contactImageUrl 
+    : hasImageObj 
+      ? urlFor(contactImage).width(600).height(450).format('webp').url() 
+      : null;
 
   return (
     <section style={{ backgroundColor }} className="relative overflow-hidden">
@@ -152,7 +148,7 @@ export default function ContactForm({
                       </div>
                       <div>
                         <p className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Email</p>
-                        <p className={`text-sm font-medium mt-1 ${textColor}`}>{email}</p>
+                        <p className={`text-sm font-medium mt-1 ${textColor} break-all`}>{email}</p>
                       </div>
                     </div>
                   )}
@@ -183,12 +179,12 @@ export default function ContactForm({
                 </div>
               </div>
 
-              {/* Side Image */}
-              {contactImageUrl && ( // ðŸ‘ˆ Use URL directly
-                <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-lg">
+              {/* Centralized Fallback Image Component */}
+              {resolvedContactImg && ( 
+                <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-lg bg-gray-100">
                   <Image
-                    src={contactImageUrl}
-                    alt="Contact"
+                    src={resolvedContactImg}
+                    alt="Contact Section Illustration"
                     fill
                     sizes="(max-width: 1024px) 100vw, 40vw"
                     className="object-cover"
@@ -198,7 +194,7 @@ export default function ContactForm({
             </div>
           )}
 
-          {/* Form */}
+          {/* Form Processing Block */}
           <div className={showInfo ? 'lg:col-span-3' : 'lg:col-span-5'}>
             <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-3xl p-6 sm:p-8 lg:p-10 shadow-xl border ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
               {isSuccess ? (
@@ -258,7 +254,7 @@ export default function ContactForm({
                           {...register('phone')}
                           type="tel"
                           className={`w-full pl-11 pr-4 py-3 rounded-xl border ${inputBg} focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all text-sm`}
-                          placeholder="+91 9876543210"
+                          placeholder="+92 300 1234567"
                         />
                       </div>
                       {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
@@ -325,4 +321,3 @@ export default function ContactForm({
     </section>
   );
 }
-
