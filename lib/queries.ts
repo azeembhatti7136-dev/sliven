@@ -118,6 +118,7 @@ export async function getRelatedProducts(collectionId: string, currentSlug: stri
   `, { collectionId, currentSlug });
 }
 
+// Get all pages (Fixed Image Fetching for urlFor Builder)
 export async function getAllPages(): Promise<any[]> {
   return client.fetch(`
     *[_type == "page"] | order(title asc) {
@@ -126,7 +127,7 @@ export async function getAllPages(): Promise<any[]> {
       slug,
       showHero,
       hero {
-        backgroundImage { asset->{ url } },
+        backgroundImage, // 👈 FIXED: Pura image reference pass karein, direct url projection hata di
         overlayOpacity,
         title,
         subtitle,
@@ -136,7 +137,7 @@ export async function getAllPages(): Promise<any[]> {
         textAlignment,
         height
       },
-      "seoImage": seo.image
+      "seoImage": seo.image // 👈 Object query match structure
     }
   `);
 }
