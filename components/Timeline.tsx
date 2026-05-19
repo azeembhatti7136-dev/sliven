@@ -26,10 +26,8 @@ interface TimelineProps {
 export default function Timeline({ sectionLabel, title, subtitle, steps, backgroundColor = '#ffffff' }: TimelineProps) {
   const isDark = backgroundColor === '#111827' || backgroundColor === '#000000';
   
-  // ⚡ Track broken status for each image step index
   const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
 
-  // ⚡ Dynamic Responsive Semantic Color Mapping
   const textColor = isDark ? 'text-white' : 'text-gray-900';
   const headingColor = isDark ? 'text-amber-400' : 'text-gray-900';
   const descColor = isDark ? 'text-gray-300' : 'text-gray-600';
@@ -76,130 +74,19 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
           <div className={`hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 ${isDark ? 'bg-gradient-to-b from-gray-800 via-amber-900/60 to-gray-800' : 'bg-gradient-to-b from-amber-200 via-orange-300 to-amber-200'} -translate-x-1/2 rounded-full`} />
 
           {steps.map((step, index) => {
-            // ═══════════════════════════════════════
-            // 🔍 SANITY IMAGE DIAGNOSTIC BLOCK START
-            // ═══════════════════════════════════════
-            
-            console.group(`🖼️ [Step ${index}] - "${step.title}" Image Diagnostic`);
-            
-            // 1. Raw Data Check
-            console.log('1️⃣ Full step.image object:', step.image);
-            console.log('2️⃣ Has imageUrl fallback?:', step.imageUrl ? `✅ YES: ${step.imageUrl}` : '❌ NO');
-            console.log('3️⃣ Has image object?:', step.image ? '✅ YES' : '❌ NO');
-            
-            if (step.image) {
-              // 2. Asset Reference Check
-              console.log('4️⃣ image._type:', step.image._type || 'NOT SET');
-              console.log('5️⃣ image.asset:', step.image.asset || 'NOT SET');
-              console.log('6️⃣ image.asset._ref:', step.image.asset?._ref || 'NOT SET');
-              console.log('7️⃣ image._ref:', step.image._ref || 'NOT SET');
-              
-              const assetRef = step.image.asset?._ref || step.image._ref;
-              
-              if (assetRef) {
-                // 3. Reference Parsing
-                const parts = assetRef.split('-');
-                console.log('8️⃣ Full Asset Ref:', assetRef);
-                console.log('9️⃣ Ref Parts Breakdown:', {
-                  type: parts[0] || 'MISSING',
-                  id: parts[1] || 'MISSING',
-                  dimensions: parts[2] || 'MISSING',
-                  extension: parts[3] || 'MISSING',
-                  isValidRef: parts.length >= 4 && parts[0] === 'image'
-                });
-                
-                // 4. Test URL Generation with urlFor()
-                console.log('🔟 Attempting urlFor()...');
-                try {
-                  const sanityUrl = urlFor(step.image).width(600).height(400).url();
-                  console.log('   ✅ urlFor() Success:', sanityUrl);
-                  
-                  // Test if URL is accessible
-                  fetch(sanityUrl, { method: 'HEAD' })
-                    .then(res => {
-                      console.log(`   🌐 HTTP Status: ${res.status} ${res.statusText}`);
-                      if (res.ok) {
-                        console.log('   ✅ Image accessible via urlFor()!');
-                      } else {
-                        console.error(`   ❌ Image NOT accessible! Status: ${res.status}`);
-                      }
-                    })
-                    .catch(err => {
-                      console.error('   ❌ Fetch failed:', err.message);
-                    });
-                } catch (err) {
-                  console.error('   ❌ urlFor() Error:', err);
-                }
-                
-                // 5. Direct CDN URL Construction
-                if (parts[1] && parts[2] && parts[3]) {
-                  const directCdnUrl = `https://cdn.sanity.io/images/d2zeiu5j/production/${parts[1]}-${parts[2]}.${parts[3]}?w=600&h=400&q=80&auto=format&fit=max`;
-                  console.log('1️⃣1️⃣ Direct CDN URL:', directCdnUrl);
-                  
-                  // Test direct CDN URL
-                  fetch(directCdnUrl, { method: 'HEAD' })
-                    .then(res => {
-                      console.log(`   🌐 HTTP Status: ${res.status} ${res.statusText}`);
-                      if (res.ok) {
-                        console.log('   ✅ Direct CDN URL accessible!');
-                      } else {
-                        console.error(`   ❌ Direct CDN URL failed! Status: ${res.status}`);
-                        console.error('   📝 Possible reasons:');
-                        console.error('      - Image unpublished in Sanity');
-                        console.error('      - Asset deleted from Sanity');
-                        console.error('      - Wrong project ID or dataset');
-                        console.error('      - CORS settings blocking access');
-                      }
-                    })
-                    .catch(err => {
-                      console.error('   ❌ Fetch failed:', err.message);
-                    });
-                } else {
-                  console.error('1️⃣1️⃣ Cannot construct direct CDN URL - missing ref parts');
-                }
-              } else {
-                console.error('❌ NO ASSET REFERENCE FOUND!');
-                console.error('   The image object exists but has no asset _ref');
-                console.error('   This means the image was not properly uploaded in Sanity');
-              }
-            } else {
-              console.error('❌ NO IMAGE OBJECT AT ALL!');
-              console.error('   This step has no image data');
-              if (step.imageUrl) {
-                console.log('   ℹ️ But has imageUrl fallback:', step.imageUrl);
-              }
-            }
-            
-            // 6. Sanity Config Summary
-            console.log('1️⃣2️⃣ Sanity Project Config:', {
-              projectId: 'd2zeiu5j',
-              dataset: 'production',
-              apiVersion: 'v1',
-              cdnBaseUrl: 'https://cdn.sanity.io/images/d2zeiu5j/production/'
-            });
-            
-            console.groupEnd();
-            
-            // ═══════════════════════════════════════
-            // 🔍 DIAGNOSTIC BLOCK END
-            // ═══════════════════════════════════════
-
             const isEven = index % 2 === 0;
             const isLast = index === steps.length - 1;
 
-            // 👇 ⚡ Secure Fallback Parser Matrix (404 Issue Fix)
+            // Image URL resolution
             const hasImageObj = step.image && (step.image.asset || step.image._ref);
             let resolvedImageUrl = null;
 
             if (step.imageUrl) {
               resolvedImageUrl = step.imageUrl;
-              console.log(`📸 Step ${index} using imageUrl fallback:`, resolvedImageUrl);
             } else if (hasImageObj) {
               try {
                 resolvedImageUrl = urlFor(step.image).width(600).height(400).url();
-                console.log(`📸 Step ${index} using urlFor():`, resolvedImageUrl);
               } catch (err) {
-                console.error(`❌ Step ${index} urlFor() failed:`, err);
                 const assetRef = step.image.asset?._ref || step.image._ref;
                 if (assetRef) {
                   const parts = assetRef.split('-');
@@ -209,12 +96,9 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
                   
                   if (id && dimensions) {
                     resolvedImageUrl = `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${dimensions}.${ext}?w=600&h=400&q=80&auto=format&fit=max`;
-                    console.log(`📸 Step ${index} using fallback URL:`, resolvedImageUrl);
                   }
                 }
               }
-            } else {
-              console.log(`📸 Step ${index}: No image available`);
             }
 
             return (
@@ -243,7 +127,7 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
                     <div className={`h-0.5 flex-1 bg-gradient-to-r ${isDark ? 'from-amber-900/40' : 'from-amber-200'} to-transparent rounded-full`} />
                   </div>
 
-                  {/* ⚡ Secure Image Core Container Box */}
+                  {/* Image Container */}
                   {resolvedImageUrl && (
                     <div className={`relative h-44 lg:h-52 rounded-2xl overflow-hidden mb-5 flex items-center justify-center transition-all duration-300 ${
                       brokenImages[index] 
@@ -253,21 +137,13 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
                       {!brokenImages[index] ? (
                         <Image
                           src={resolvedImageUrl}
-                          alt={step.title || 'Timeline step asset process'}
+                          alt={step.title || 'Timeline step'}
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 30vw"
                           className="object-cover transform group-hover:scale-[1.03] transition-transform duration-500 ease-out"
                           priority={index < 2} 
-                          onError={(e) => {
-                            console.error(`❌ Image Load Error for Step ${index}:`, {
-                              title: step.title,
-                              url: resolvedImageUrl,
-                              error: e
-                            });
+                          onError={() => {
                             setBrokenImages(prev => ({ ...prev, [index]: true }));
-                          }}
-                          onLoad={() => {
-                            console.log(`✅ Image Loaded Successfully for Step ${index}: ${step.title}`);
                           }}
                         />
                       ) : (
@@ -283,7 +159,7 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
                     </div>
                   )}
 
-                  {/* Text Description Zone */}
+                  {/* Text Content */}
                   <h3 className={`text-xl font-bold mb-2 ${headingColor} group-hover:text-amber-500 transition-colors duration-200`}>
                     {step.title}
                   </h3>
