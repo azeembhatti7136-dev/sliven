@@ -102,7 +102,7 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
                 }
               }
             }
-
+console.log("Step", index, "URL:", resolvedImageUrl);
             return (
               <motion.div
                 key={step._key || index}
