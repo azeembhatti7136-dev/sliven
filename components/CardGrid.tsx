@@ -81,14 +81,14 @@ export default function CardGrid({
 }
 
 function CardItem({ card, index, isDarkSection }: { card: Card; index: number; isDarkSection: boolean }) {
-  // If the wrapper section is dark, build a dark layout context for the card
-  const isDarkCard = isDarkSection || card.backgroundColor === '#111827' || card.backgroundColor === '#1f2937';
+  // ⚡ Text colors ko hamesha dark rakhne ke liye hum strict light theme classes use karenge
+  const borderColor = isDarkSection ? 'border-gray-700' : 'border-gray-200';
+  const hoverBorderColor = isDarkSection ? 'hover:border-amber-500/50' : 'hover:border-amber-300';
   
-  const borderColor = isDarkCard ? 'border-gray-700' : 'border-gray-100';
-  const hoverBorderColor = isDarkCard ? 'hover:border-gray-600' : 'hover:border-amber-200';
-  const titleColor = isDarkCard ? 'text-white' : 'text-gray-900';
-  const descColor = isDarkCard ? 'text-gray-300' : 'text-gray-600';
-  const fallbackBg = isDarkCard ? 'bg-gray-800' : 'bg-gray-100';
+  // 🔒 Locked to Dark Text (Hamesha Black/Dark-Gray rahega chahe parent background dark hi kyun na ho)
+  const titleColor = 'text-black font-extrabold'; 
+  const descColor = 'text-gray-700';
+  const fallbackBg = 'bg-gray-100';
 
   const accentColors = [
     'from-amber-400 to-orange-500',
@@ -137,14 +137,14 @@ function CardItem({ card, index, isDarkSection }: { card: Card; index: number; i
       {/* Content - CENTER ALIGNED */}
       <div className="p-5 sm:p-6 pt-0 space-y-3 text-center flex-1 flex flex-col justify-between">
         <div className="space-y-3">
-          {/* Title */}
-          <h3 className={`text-lg font-bold ${titleColor} group-hover:text-amber-600 transition-colors duration-300`}>
+          {/* Title - Static Black */}
+          <h3 className={`text-lg ${titleColor} group-hover:text-amber-600 transition-colors duration-300`}>
             {card.cardTitle}
           </h3>
 
-          {/* Description */}
+          {/* Description - Static Dark Gray */}
           {card.cardDescription && (
-            <p className={`text-sm ${descColor} leading-relaxed line-clamp-3`}>
+            <p className={`text-sm ${descColor} leading-relaxed line-clamp-3 font-medium`}>
               {card.cardDescription}
             </p>
           )}
@@ -159,7 +159,9 @@ function CardItem({ card, index, isDarkSection }: { card: Card; index: number; i
   );
 
   const cardClasses = `group rounded-2xl border ${borderColor} ${hoverBorderColor} shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 flex flex-col h-full`;
-  const defaultBg = isDarkSection ? '#1f2937' : '#ffffff';
+  
+  // ⚡ Card ka apna background white ya light hi rehna chahiye taake black text readable ho
+  const defaultBg = '#ffffff';
 
   return card.link ? (
     <Link 
