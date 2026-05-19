@@ -7,10 +7,10 @@ import { motion } from 'framer-motion';
 import RichTextRenderer from './RichTextRenderer';
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
-  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
+  const ref = image.asset._ref;
+  const parts = ref.split('-');
+  const id = parts[1];
+  const fmt = parts[3] || 'jpg';
   const h = height || Math.round(width * 0.75);
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
@@ -24,7 +24,7 @@ interface TimelineStep {
   title: string;
   description?: string;
   image?: any;
-  imageUrl?: string; // 👈 ADD pre-processed URL option
+  imageUrl?: string; // ðŸ‘ˆ ADD pre-processed URL option
 }
 
 interface TimelineProps {
@@ -110,7 +110,7 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
                   {step.image && (
                     <div className="relative h-44 lg:h-52 rounded-2xl overflow-hidden mb-5 group-hover:shadow-md transition-shadow">
                       <Image
-                        src={step.imageUrl || getImageUrl(step.image, 600, 400)} // 👈 Safe URL
+                        src={step.imageUrl || getImageUrl(step.image, 600, 400)} // ðŸ‘ˆ Safe URL
                         alt={step.title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-700"

@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { Mail, Phone, MapPin } from 'lucide-react';
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
-  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
+  const ref = image.asset._ref;
+  const parts = ref.split('-');
+  const id = parts[1];
+  const fmt = parts[3] || 'jpg';
   const h = height || Math.round(width * 0.75);
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
@@ -30,7 +30,7 @@ interface FooterColumn {
 interface FooterProps {
   logo?: any;
   logoText?: string;
-  logoUrl?: string; // 👈 ADD THIS LINE
+  logoUrl?: string; // ðŸ‘ˆ ADD THIS LINE
   description?: string;
   columns?: FooterColumn[];
   bottomText?: string;
@@ -42,7 +42,7 @@ interface FooterProps {
 export default function Footer({
   logo,
   logoText,
-  logoUrl, // 👈 ADD THIS
+  logoUrl, // ðŸ‘ˆ ADD THIS
   description,
   columns,
   bottomText,
@@ -56,9 +56,9 @@ export default function Footer({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block mb-6">
-              {logoUrl ? ( // 👈 CHANGE: logo -> logoUrl
+              {logoUrl ? ( // ðŸ‘ˆ CHANGE: logo -> logoUrl
                 <Image
-                  src={logoUrl} // 👈 CHANGE
+                  src={logoUrl} // ðŸ‘ˆ CHANGE
                   alt="Logo"
                   width={120}
                   height={40}
@@ -154,7 +154,7 @@ export default function Footer({
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-gray-500">
-              {bottomText || `© ${new Date().getFullYear()} Quotify. All rights reserved.`}
+              {bottomText || `Â© ${new Date().getFullYear()} Quotify. All rights reserved.`}
             </p>
             
             {/* Social Links */}

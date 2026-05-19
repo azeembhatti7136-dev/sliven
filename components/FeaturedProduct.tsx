@@ -8,10 +8,10 @@ import RichTextRenderer from './RichTextRenderer';
 import QuoteButton from './QuoteButton';
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
-  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
+  const ref = image.asset._ref;
+  const parts = ref.split('-');
+  const id = parts[1];
+  const fmt = parts[3] || 'jpg';
   const h = height || Math.round(width * 0.75);
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
@@ -99,12 +99,12 @@ export default function FeaturedProduct({
       {/* Price */}
       <div className="flex items-baseline gap-3 flex-wrap">
         <span className={`text-3xl lg:text-4xl font-bold ${textColor}`}>
-          ₹{product.price?.toLocaleString('en-IN')}
+          â‚¹{product.price?.toLocaleString('en-IN')}
         </span>
         {product.compareAtPrice && product.compareAtPrice > product.price && (
           <>
             <span className={`text-xl line-through ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-              ₹{product.compareAtPrice.toLocaleString('en-IN')}
+              â‚¹{product.compareAtPrice.toLocaleString('en-IN')}
             </span>
             <span className="px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700 border border-green-200">
               {discount}% OFF
@@ -131,7 +131,7 @@ export default function FeaturedProduct({
       {/* Quote Alert */}
       {isQuoteProduct && (
         <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-          <p className="text-amber-800 font-semibold text-sm">📋 Custom Quote Required</p>
+          <p className="text-amber-800 font-semibold text-sm">ðŸ“‹ Custom Quote Required</p>
           <p className="text-amber-600 text-xs mt-1">Fill the form and we'll get back with pricing</p>
         </div>
       )}
@@ -181,7 +181,7 @@ export default function FeaturedProduct({
          <QuoteButton
   productId={product._id}
   productName={productName}
-  productImage={product.images?.[0]}  // 👈 ADD
+  productImage={product.images?.[0]}  // ðŸ‘ˆ ADD
   productSku={product.sku}
   productCollection={(product as any).collection?.title}
   buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}

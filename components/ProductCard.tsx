@@ -1,5 +1,5 @@
 // src/components/ProductCard.tsx
-'use client';  // 👈 ADD THIS!
+'use client';  // ðŸ‘ˆ ADD THIS!
 
 
 import Image from 'next/image';
@@ -8,10 +8,10 @@ import { Package } from 'lucide-react';
 import QuoteButton from './QuoteButton';
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
-  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
+  const ref = image.asset._ref;
+  const parts = ref.split('-');
+  const id = parts[1];
+  const fmt = parts[3] || 'jpg';
   const h = height || Math.round(width * 0.75);
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
@@ -19,14 +19,14 @@ function getImageUrl(image: any, width: number = 800, height?: number): string {
 
 export default function ProductCard({ product, compact = false }: { product: any; compact?: boolean }) {
   const isQuoteProduct = product.quoteSettings?.enableQuote || false;
-  const imageUrl = product.imageUrl || product.image; // 👈 Use pre-processed URL or fallback
+  const imageUrl = product.imageUrl || product.image; // ðŸ‘ˆ Use pre-processed URL or fallback
 
   return (
     <div className={`group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col ${compact ? 'w-[380px] h-[450px]' : ''}`}>
       <Link href={`/products/${product.slug.current}`} className={`relative overflow-hidden bg-gray-50 ${compact ? 'aspect-square max-h-[380px]' : 'aspect-square'}`}>
         {imageUrl ? (
           <Image 
-            src={imageUrl} // 👈 Direct URL
+            src={imageUrl} // ðŸ‘ˆ Direct URL
             alt={product.title} 
             fill 
             sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw)"} 

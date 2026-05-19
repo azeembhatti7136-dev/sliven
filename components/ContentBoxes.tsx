@@ -7,10 +7,10 @@ import { ArrowRight, Check } from 'lucide-react';
 import RichTextRenderer from './RichTextRenderer';
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
-  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
+  const ref = image.asset._ref;
+  const parts = ref.split('-');
+  const id = parts[1];
+  const fmt = parts[3] || 'jpg';
   const h = height || Math.round(width * 0.75);
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
@@ -107,12 +107,12 @@ export default function ContentBoxes({
 }
 
 function ContentBoxItem({ box, index, isDarkSection }: { box: Box; index: number; isDarkSection: boolean }) {
-  // 👇 FORCE DARK BACKGROUND when section is dark, ignore box's own backgroundColor
+  // ðŸ‘‡ FORCE DARK BACKGROUND when section is dark, ignore box's own backgroundColor
   const boxBackground = isDarkSection 
-    ? '#1f2937'  // 👈 Force dark gray for all boxes when section is dark
+    ? '#1f2937'  // ðŸ‘ˆ Force dark gray for all boxes when section is dark
     : (box.backgroundColor || '#ffffff'); // Respect box background only in light mode
   
-  const isDarkBox = isDarkSection; // 👈 Simple - if section is dark, box is dark
+  const isDarkBox = isDarkSection; // ðŸ‘ˆ Simple - if section is dark, box is dark
 
   const roundClasses = {
     medium: 'rounded-lg',

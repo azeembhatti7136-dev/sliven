@@ -11,10 +11,10 @@ import { toast } from 'sonner';
 
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
-  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
+  const ref = image.asset._ref;
+  const parts = ref.split('-');
+  const id = parts[1];
+  const fmt = parts[3] || 'jpg';
   const h = height || Math.round(width * 0.75);
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
@@ -36,7 +36,7 @@ interface QuoteFormModalProps {
   productId: string;
   productName: string;
   productImage?: any;
-  productImageUrl?: string; // 👈 ADD: Pre-processed URL
+  productImageUrl?: string; // ðŸ‘ˆ ADD: Pre-processed URL
   productSku?: string;
   productCollection?: string;
 }
@@ -47,7 +47,7 @@ export default function QuoteFormModal({
   productId,
   productName,
   productImage,
-  productImageUrl, // 👈 ADD
+  productImageUrl, // ðŸ‘ˆ ADD
   productSku,
   productCollection,
 }: QuoteFormModalProps) {
@@ -68,7 +68,7 @@ export default function QuoteFormModal({
     setIsSubmitting(true);
 
     try {
-      // 👇 API route se Sanity mein data save karo
+      // ðŸ‘‡ API route se Sanity mein data save karo
       const response = await fetch('/api/submit-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,7 +117,7 @@ export default function QuoteFormModal({
         <div className="p-6 border-b border-gray-50 bg-gray-50">
           <div className="flex items-center gap-4">
             <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white border border-gray-200 flex-shrink-0">
-              {productImageUrl ? ( // 👈 Use URL directly
+              {productImageUrl ? ( // ðŸ‘ˆ Use URL directly
                 <Image src={productImageUrl} alt={productName} fill className="object-cover" sizes="64px" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-300"><Package className="w-8 h-8" /></div>

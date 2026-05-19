@@ -7,17 +7,17 @@ import Link from 'next/link';
 
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
-  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
+  const ref = image.asset._ref;
+  const parts = ref.split('-');
+  const id = parts[1];
+  const fmt = parts[3] || 'jpg';
   const h = height || Math.round(width * 0.75);
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
 
-// ❌ DELETE these:
-// function getImageUrl(imageRef: string): string { ... }  ← DELETE
-// function getSanityImageUrl(image: any): string { ... }   ← DELETE
+// âŒ DELETE these:
+// function getImageUrl(imageRef: string): string { ... }  â† DELETE
+// function getSanityImageUrl(image: any): string { ... }   â† DELETE
 
 interface RichTextRendererProps {
   content: any;
@@ -36,7 +36,7 @@ const createComponents = (headingColor = 'text-gray-900', descriptionColor = 'te
     image: ({value}: any) => (
       <div className="relative aspect-video my-6 rounded-xl overflow-hidden">
         <Image
-          src={getImageUrl(value)} // 👈 Use getImageUrl
+          src={getImageUrl(value)} // ðŸ‘ˆ Use getImageUrl
           alt={value.alt || ''}
           fill
           className="object-cover"

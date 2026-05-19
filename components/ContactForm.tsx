@@ -14,15 +14,15 @@ import { toast } from 'sonner';
 import RichTextRenderer from './RichTextRenderer';
 function getImageUrl(image: any, width: number = 800, height?: number): string {
   if (!image?.asset?._ref) return '';
-  const match = image.asset._ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  if (!match) return '';
-  const id = match[1];
-  const fmt = match[3] || 'jpg';
+  const ref = image.asset._ref;
+  const parts = ref.split('-');
+  const id = parts[1];
+  const fmt = parts[3] || 'jpg';
   const h = height || Math.round(width * 0.75);
   return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
 }
 
-// ❌ DELETE: import { client } from '@/lib/sanity';
+// âŒ DELETE: import { client } from '@/lib/sanity';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -39,7 +39,7 @@ interface ContactFormProps {
   title: any;
   subtitle?: string;
   contactImage?: any;
-  contactImageUrl?: string; // 👈 ADD
+  contactImageUrl?: string; // ðŸ‘ˆ ADD
   backgroundColor?: string;
   showInfo?: boolean;
   email?: string;
@@ -52,7 +52,7 @@ export default function ContactForm({
   title,
   subtitle,
   contactImage,
-  contactImageUrl, // 👈 ADD
+  contactImageUrl, // ðŸ‘ˆ ADD
   backgroundColor = '#f9fafb',
   showInfo = true,
   email,
@@ -81,7 +81,7 @@ export default function ContactForm({
     setIsSubmitting(true);
 
     try {
-      // 👇 API route se Sanity mein data save karo
+      // ðŸ‘‡ API route se Sanity mein data save karo
       const response = await fetch('/api/submit-contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -184,7 +184,7 @@ export default function ContactForm({
               </div>
 
               {/* Side Image */}
-              {contactImageUrl && ( // 👈 Use URL directly
+              {contactImageUrl && ( // ðŸ‘ˆ Use URL directly
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-lg">
                   <Image
                     src={contactImageUrl}
