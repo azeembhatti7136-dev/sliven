@@ -138,17 +138,17 @@ console.log("Step", index, "URL:", resolvedImageUrl);
                     }`}>
                       {!brokenImages[index] ? (
                         <Image
-                          src={resolvedImageUrl}
-                          alt={step.title || 'Timeline step asset process'}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 30vw"
-                          className="object-cover transform group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-                          priority={index < 2} 
-                          // If CDN fails with 404, trigger visual fallback state instantly
-                          onError={() => {
-                            setBrokenImages(prev => ({ ...prev, [index]: true }));
-                          }}
-                        />
+  src={resolvedImageUrl}
+  alt={step.title || 'Timeline image'}
+  fill
+  unoptimized // 👈 YEH ADD KAREIN
+  className="..."
+  priority={index < 2}
+  onError={(e) => {
+    console.error("Image Load Error:", e); // Error details check karein
+    setBrokenImages(prev => ({ ...prev, [index]: true }));
+  }}
+/>
                       ) : (
                         <div className="text-center p-4 animate-pulse">
                           <svg className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-amber-500/40' : 'text-amber-600/40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
