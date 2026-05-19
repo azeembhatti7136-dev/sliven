@@ -101,7 +101,9 @@ async function getHomePage() {
             stepNumber, 
             title, 
             description, 
-            image 
+            image,
+            // 👇 ⚡ Yeh line Sanity Studio ke true CDN asset URL ko directly fetch karegi
+            "imageUrl": image.asset->url
           },
           backgroundColor
         },
