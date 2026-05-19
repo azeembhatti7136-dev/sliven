@@ -1,20 +1,10 @@
-// src/components/ImageTextSection.tsx
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { urlFor } from '@/lib/sanity'; // 👈 Centralized super safe wrapper use kiya
 import RichTextRenderer from './RichTextRenderer';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
 
 interface ImageTextItem {
   _key: string;
@@ -50,13 +40,25 @@ export default function ImageTextSection({
 
   if (!sections || sections.length === 0) return null;
 
+  // ───── Safe Background Image URL Resolution ─────
+  let bgImageUrl = '';
+  if (backgroundImage) {
+    try {
+      bgImageUrl = typeof backgroundImage === 'string' && backgroundImage.startsWith('http')
+        ? backgroundImage
+        : urlFor(backgroundImage).width(1920).height(1080).url();
+    } catch (err) {
+      console.error("Error building ImageTextSection background image URL:", err);
+    }
+  }
+
   return (
     <section style={{ backgroundColor }} className="relative overflow-hidden">
-      {/* ðŸŽ¯ Background Image */}
-      {backgroundImage && (
+      {/* 🎯 Background Image */}
+      {bgImageUrl && (
         <div className="absolute inset-0 z-0">
           <Image
-            src={getImageUrl(backgroundImage, 1920, 1080)}
+            src={bgImageUrl}
             alt="Section background"
             fill
             className="object-cover"
@@ -74,7 +76,7 @@ export default function ImageTextSection({
       )}
 
       {/* Decorative Elements (only if no background image) */}
-      {!isDark && !backgroundImage && (
+      {!isDark && !bgImageUrl && (
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-40 left-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl opacity-50" />
           <div className="absolute bottom-40 right-0 w-64 h-64 bg-orange-50 rounded-full blur-3xl opacity-50" />
@@ -101,7 +103,7 @@ export default function ImageTextSection({
         {/* Sections */}
         <div className="space-y-20 lg:space-y-32">
           {sections.map((section, index) => (
-            <ImageTextItem key={section._key} section={section} index={index} isDark={isDark} />
+            <ImageTextItemRow key={section._key} section={section} index={index} isDark={isDark} />
           ))}
         </div>
       </div>
@@ -109,7 +111,7 @@ export default function ImageTextSection({
   );
 }
 
-function ImageTextItem({
+function ImageTextItemRow({
   section,
   index,
   isDark,
@@ -123,6 +125,18 @@ function ImageTextItem({
   const cardBg = isDark ? 'bg-gray-800/60 backdrop-blur-sm' : 'bg-white/80 backdrop-blur-sm';
   const textColor = isDark ? 'text-white' : 'text-gray-900';
   const descColor = isDark ? 'text-gray-300' : 'text-gray-600';
+
+  // ───── Safe Block Grid Image URL Resolution ─────
+  let itemImageUrl = '';
+  if (section?.image) {
+    try {
+      itemImageUrl = typeof section.image === 'string' && section.image.startsWith('http')
+        ? section.image
+        : urlFor(section.image).width(800).height(600).url();
+    } catch (err) {
+      console.error("Error building row item image URL:", err);
+    }
+  }
 
   const contentBlock = (
     <div className={`flex flex-col justify-center space-y-6 ${cardBg} p-8 lg:p-12 rounded-3xl border ${borderColor} shadow-lg`}>
@@ -158,15 +172,19 @@ function ImageTextItem({
 
   const imageBlock = (
     <div className="relative group">
-      <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
-        {section.image && (
+      <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl bg-gray-100">
+        {itemImageUrl ? (
           <Image
-            src={getImageUrl(section.image, 800, 600)}
+            src={itemImageUrl}
             alt={section.imageAlt || 'Section image'}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover group-hover:scale-105 transition-transform duration-700"
           />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+            No Image
+          </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>

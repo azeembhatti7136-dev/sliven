@@ -1,19 +1,10 @@
-"use client";
+'use client';
 // src/components/Hero.tsx
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { urlFor } from '@/lib/sanity'; // 👈 Aapka banaya hua super safe wrapper yahan import kiya!
 import RichTextRenderer from './RichTextRenderer';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
 
 interface HeroProps {
   backgroundImage: any;
@@ -64,12 +55,21 @@ export default function Hero({
     right: 'flex-end',
   };
 
-  // Vertical position (justify content) mapping
-  const justifyContentMap: Record<string, 'flex-start' | 'center' | 'flex-end'> = {
-    top: 'flex-start',
-    middle: 'center',
-    bottom: 'flex-end',
-  };
+  // ───── Safe Image URL Builder ─────
+  let heroImageUrl = '';
+  if (backgroundImage) {
+    try {
+      if (typeof backgroundImage === 'string' && backgroundImage.startsWith('http')) {
+        heroImageUrl = backgroundImage;
+      } else {
+        // Hero background ke liye wide aspect structure apply karein
+        heroImageUrl = urlFor(backgroundImage).width(1920).url();
+      }
+    } catch (err) {
+      console.error("Error building Hero background image URL:", err);
+      heroImageUrl = '';
+    }
+  }
 
   return (
     <section 
@@ -80,11 +80,11 @@ export default function Hero({
         alignItems: verticalPosition === 'top' ? 'flex-start' : verticalPosition === 'bottom' ? 'flex-end' : 'center',
         overflow: 'hidden',
         width: '100%',
-        backgroundColor: backgroundImage ? 'transparent' : '#111827',
+        backgroundColor: heroImageUrl ? 'transparent' : '#111827',
       }}
     >
       {/* Background Image */}
-      {backgroundImage && (
+      {heroImageUrl && (
         <div 
           style={{
             position: 'absolute',
@@ -94,7 +94,7 @@ export default function Hero({
           }}
         >
           <Image
-            src={getImageUrl(backgroundImage, 1920)}
+            src={heroImageUrl} // 👈 Ab yahan 100% genuine generated string milegi
             alt="Hero background"
             fill
             style={{ objectFit: imageFit }}
@@ -162,38 +162,38 @@ export default function Hero({
 
           {/* CTA Button */}
           {showButton && (
-  <div style={{ marginTop: '32px' }}>
-    <Link
-      href={buttonLink}
-      className="group relative inline-flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-gray-50 px-8 py-5 font-bold text-gray-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-500 hover:shadow-[0_20px_40px_rgb(0,0,0,0.2)] hover:-translate-y-1 active:translate-y-0 active:scale-[0.98]"
-    >
-      {/* Top shine line */}
-      <span className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent" />
-      
-      {/* Animated background glow */}
-      <span className="absolute inset-0 -z-10 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 opacity-0 blur-xl transition-all duration-500 group-hover:opacity-20 group-hover:blur-2xl" />
-      
-      {/* Ripple effect on hover */}
-      <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/80 to-transparent -translate-x-full skew-x-12 transition-all duration-1000 group-hover:translate-x-full" />
-      
-      {/* Pulsing dot */}
-      <span className="relative flex h-3 w-3">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-        <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
-      </span>
-      
-      {/* Button text */}
-      <span className="relative z-10 text-base tracking-wide">
-        {buttonText}
-      </span>
-      
-      {/* Animated arrow container */}
-      <span className="relative z-10 flex items-center justify-center rounded-full bg-gray-900 p-1.5 transition-all duration-500 group-hover:bg-black group-hover:shadow-lg group-hover:shadow-black/30 group-hover:translate-x-1">
-        <ArrowRight className="h-4 w-4 text-white transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-15deg]" />
-      </span>
-    </Link>
-  </div>
-)}
+            <div style={{ marginTop: '32px' }}>
+              <Link
+                href={buttonLink}
+                className="group relative inline-flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-gray-50 px-8 py-5 font-bold text-gray-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-500 hover:shadow-[0_20px_40px_rgb(0,0,0,0.2)] hover:-translate-y-1 active:translate-y-0 active:scale-[0.98]"
+              >
+                {/* Top shine line */}
+                <span className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent" />
+                
+                {/* Animated background glow */}
+                <span className="absolute inset-0 -z-10 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 opacity-0 blur-xl transition-all duration-500 group-hover:opacity-20 group-hover:blur-2xl" />
+                
+                {/* Ripple effect on hover */}
+                <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/80 to-transparent -translate-x-full skew-x-12 transition-all duration-1000 group-hover:translate-x-full" />
+                
+                {/* Pulsing dot */}
+                <span className="relative flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+                </span>
+                
+                {/* Button text */}
+                <span className="relative z-10 text-base tracking-wide">
+                  {buttonText}
+                </span>
+                
+                {/* Animated arrow container */}
+                <span className="relative z-10 flex items-center justify-center rounded-full bg-gray-900 p-1.5 transition-all duration-500 group-hover:bg-black group-hover:shadow-lg group-hover:shadow-black/30 group-hover:translate-x-1">
+                  <ArrowRight className="h-4 w-4 text-white transition-all duration-500 group-hover:scale-110 group-hover:rotate-[-15deg]" />
+                </span>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </section>

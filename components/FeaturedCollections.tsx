@@ -1,20 +1,10 @@
-// src/components/FeaturedCollections.tsx
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Package } from 'lucide-react';
+import { urlFor } from '@/lib/sanity'; // 👈 Centralized super safe wrapper use kiya
 import RichTextRenderer from './RichTextRenderer';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
 
 interface Collection {
   _id: string;
@@ -50,60 +40,75 @@ export default function FeaturedCollections({
 
   // Grid Layout
   const GridLayout = () => (
-  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 lg:gap-6">
-    {collections.map((collection, index) => (
-      <CollectionCard key={collection._id} collection={collection} index={index} compact />
-    ))}
-  </div>
-);
-
-  // Featured Layout (1 large + rest small)
-  const FeaturedLayout = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-      {/* First collection - Large */}
-      {collections[0] && (
-        <Link
-          href={`/collections/${collections[0].slug.current}`}
-          className="group relative overflow-hidden rounded-3xl bg-gray-100 min-h-[400px] lg:min-h-[500px] shadow-lg hover:shadow-2xl transition-all duration-500"
-        >
-          {collections[0].image ? (
-            <Image
-              src={getImageUrl(collections[0].image, 800, 600)}
-              alt={collections[0].title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-700"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full bg-gradient-to-br from-amber-100 to-orange-200">
-              <Package className="w-20 h-20 text-amber-400" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <h3 className="text-3xl font-bold text-white mb-2">{collections[0].title}</h3>
-            {collections[0].description && (
-              <p className="text-white/70 text-sm line-clamp-2">{collections[0].description}</p>
-            )}
-            <span className="inline-flex items-center gap-2 text-white font-semibold mt-4 group-hover:gap-3 transition-all">
-              Explore Collection <ArrowRight className="w-4 h-4" />
-            </span>
-          </div>
-        </Link>
-      )}
-
-      {/* Rest collections - Small grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
-        {collections.slice(1, 5).map((collection, index) => (
-          <CollectionCard
-            key={collection._id}
-            collection={collection}
-            index={index + 1}
-            compact
-          />
-        ))}
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 lg:gap-6">
+      {collections.map((collection, index) => (
+        <CollectionCard key={collection._id} collection={collection} index={index} compact />
+      ))}
     </div>
   );
+
+  // Featured Layout (1 large + rest small)
+  const FeaturedLayout = () => {
+    const firstCollection = collections[0];
+    let firstCollectionImgUrl = '';
+    
+    if (firstCollection?.image) {
+      try {
+        firstCollectionImgUrl = typeof firstCollection.image === 'string' && firstCollection.image.startsWith('http')
+          ? firstCollection.image
+          : urlFor(firstCollection.image).width(800).height(600).url();
+      } catch (err) {
+        console.error("Error building first collection image:", err);
+      }
+    }
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        {/* First collection - Large */}
+        {firstCollection && (
+          <Link
+            href={`/collections/${firstCollection.slug?.current || '#'}`}
+            className="group relative overflow-hidden rounded-3xl bg-gray-100 min-h-[400px] lg:min-h-[500px] shadow-lg hover:shadow-2xl transition-all duration-500"
+          >
+            {firstCollectionImgUrl ? (
+              <Image
+                src={firstCollectionImgUrl}
+                alt={firstCollection.title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gradient-to-br from-amber-100 to-orange-200">
+                <Package className="w-20 h-20 text-amber-400" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-8">
+              <h3 className="text-3xl font-bold text-white mb-2">{firstCollection.title}</h3>
+              {firstCollection.description && (
+                <p className="text-white/70 text-sm line-clamp-2">{firstCollection.description}</p>
+              )}
+              <span className="inline-flex items-center gap-2 text-white font-semibold mt-4 group-hover:gap-3 transition-all">
+                Explore Collection <ArrowRight className="w-4 h-4" />
+              </span>
+            </div>
+          </Link>
+        )}
+
+        {/* Rest collections - Small grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
+          {collections.slice(1, 5).map((collection, index) => (
+            <CollectionCard
+              key={collection._id}
+              collection={collection}
+              index={index + 1}
+              compact
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   // Collection Card Component
   const CollectionCard = ({
@@ -125,18 +130,29 @@ export default function FeaturedCollections({
     ];
 
     const gradientBg = gradientOverlays[index % gradientOverlays.length];
+    
+    let cardImageUrl = '';
+    if (collection?.image) {
+      try {
+        cardImageUrl = typeof collection.image === 'string' && collection.image.startsWith('http')
+          ? collection.image
+          : urlFor(collection.image).width(600).height(400).url();
+      } catch (err) {
+        console.error("Error building card image URL:", err);
+      }
+    }
 
     return (
       <Link
-        href={`/collections/${collection.slug.current}`}
+        href={`/collections/${collection.slug?.current || '#'}`}
         className={`group relative overflow-hidden rounded-2xl bg-gray-100 shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 ${
           compact ? 'min-h-[200px]' : 'min-h-[300px]'
         }`}
       >
-        {collection.image ? (
+        {cardImageUrl ? (
           <Image
-            src={getImageUrl(collection.image, 600, 400)}
-            alt={collection.title}
+            src={cardImageUrl}
+            alt={collection.title || 'Collection Image'}
             fill
             className="object-cover group-hover:scale-110 transition-transform duration-700"
           />

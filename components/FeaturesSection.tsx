@@ -1,19 +1,9 @@
-// src/components/FeaturesSection.tsx
 'use client';
 
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { urlFor } from '@/lib/sanity'; // 👈 Centralized super safe wrapper use kiya
 import RichTextRenderer from './RichTextRenderer';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
 
 interface FeatureCard {
   _key: string;
@@ -48,7 +38,6 @@ export default function FeaturesSection({
   const textColor = isDark ? 'text-white' : 'text-gray-900';
   const subtitleColor = isDark ? 'text-gray-300' : 'text-gray-600';
   const cardBorderColor = isDark ? 'border-gray-700' : 'border-gray-100';
-  const cardShadowColor = isDark ? 'shadow-gray-900' : 'shadow-gray-200';
 
   const getIconBackground = (index: number) => {
     const colors = [
@@ -66,7 +55,7 @@ export default function FeaturesSection({
     <section style={bgStyle} className="relative overflow-hidden">
       {/* Background Pattern */}
       {!isDark && (
-        <div className="absolute inset-0 opacity-[0.03]">
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
           <div className="absolute top-0 left-0 w-96 h-96 bg-amber-500 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500 rounded-full blur-3xl" />
         </div>
@@ -96,52 +85,71 @@ export default function FeaturesSection({
 
         {/* Features Grid */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {features?.map((feature, index) => (
-            <div
-              key={feature._key}
-              className={`group relative bg-white rounded-2xl p-8 border ${cardBorderColor} shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden`}
-              style={{ backgroundColor: feature.backgroundColor || '#ffffff' }}
-            >
-              {/* Hover Gradient Border Effect */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(251,146,60,0.1), rgba(251,191,36,0.1))',
-                }}
-              />
+          {features?.map((feature, index) => {
+            // ───── Safe Icon URL Resolution ─────
+            let iconUrl = '';
+            if (feature?.icon) {
+              try {
+                iconUrl = typeof feature.icon === 'string' && feature.icon.startsWith('http')
+                  ? feature.icon
+                  : urlFor(feature.icon).width(64).height(64).url();
+              } catch (err) {
+                console.error("Error building feature icon URL:", err);
+              }
+            }
 
-              {/* Icon with Gradient Background */}
-              <div className="relative mb-6">
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${getIconBackground(index)} p-3 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={getImageUrl(feature.icon, 64, 64)}
-                      alt={feature.title}
-                      fill
-                      sizes="64px"
-                      className="object-contain brightness-0 invert"
-                    />
+            return (
+              <div
+                key={feature._key}
+                className={`group relative bg-white rounded-2xl p-8 border ${cardBorderColor} shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden`}
+                style={{ backgroundColor: feature.backgroundColor || '#ffffff' }}
+              >
+                {/* Hover Gradient Border Effect */}
+                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(251,146,60,0.1), rgba(251,191,36,0.1))',
+                  }}
+                />
+
+                {/* Icon with Gradient Background */}
+                <div className="relative mb-6">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${getIconBackground(index)} p-3 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      {iconUrl ? (
+                        <Image
+                          src={iconUrl}
+                          alt={feature.title}
+                          fill
+                          sizes="64px"
+                          className="object-contain brightness-0 invert"
+                        />
+                      ) : (
+                        // Fallback icon label if image fails completely
+                        <span className="text-white text-xs font-bold">ICON</span>
+                      )}
+                    </div>
                   </div>
+                  {/* Number Badge */}
+                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center text-xs font-bold text-gray-400 border border-gray-100">
+                    {index + 1}
+                  </span>
                 </div>
-                {/* Number Badge */}
-                <span className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center text-xs font-bold text-gray-400 border border-gray-100">
-                  {index + 1}
-                </span>
+
+                {/* Feature Title */}
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-amber-600 transition-colors duration-300">
+                  {feature.title}
+                </h3>
+
+                {/* Feature Description */}
+                <p className="text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+
+                {/* Bottom Accent Line */}
+                <div className={`mt-6 h-1 w-12 rounded-full bg-gradient-to-r ${getIconBackground(index)} group-hover:w-full transition-all duration-500`} />
               </div>
-
-              {/* Feature Title */}
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-amber-600 transition-colors duration-300">
-                {feature.title}
-              </h3>
-
-              {/* Feature Description */}
-              <p className="text-gray-600 leading-relaxed">
-                {feature.description}
-              </p>
-
-              {/* Bottom Accent Line */}
-              <div className={`mt-6 h-1 w-12 rounded-full bg-gradient-to-r ${getIconBackground(index)} group-hover:w-full transition-all duration-500`} />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

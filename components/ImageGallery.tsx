@@ -1,21 +1,11 @@
-// src/components/ImageGallery.tsx
 'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { ZoomIn } from 'lucide-react';
+import { ZoomIn, Package } from 'lucide-react';
+import { urlFor } from '@/lib/sanity'; // 👈 Centralized super safe wrapper use kiya
 import RichTextRenderer from './RichTextRenderer';
 import ImageLightbox from './ImageLightbox';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
 
 interface GalleryImage {
   _key: string;
@@ -109,37 +99,57 @@ export default function ImageGallery({
 
         {/* Gallery Grid */}
         <div className={`grid ${columnClasses[columns]} ${gapClasses[gap]}`}>
-          {images.map((image, index) => (
-            <div
-              key={image._key}
-              className={`group relative ${aspectClasses[columns]} rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-1`}
-              onClick={() => openLightbox(index)}
-            >
-              <Image
-                src={getImageUrl(image, 600, 600)}
-                alt={image.alt || `Gallery image ${index + 1}`}
-                fill
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="object-cover group-hover:scale-110 transition-transform duration-700"
-              />
+          {images.map((image, index) => {
+            // ───── Safe Gallery Image URL Resolution ─────
+            let galleryImageUrl = '';
+            if (image) {
+              try {
+                galleryImageUrl = typeof image === 'string' && image.startsWith('http')
+                  ? image
+                  : urlFor(image).width(600).height(600).url();
+              } catch (err) {
+                console.error(`Error building gallery image URL at index ${index}:`, err);
+              }
+            }
 
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500 flex items-center justify-center">
-                <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
-                  <div className="w-14 h-14 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl">
-                    <ZoomIn className="w-6 h-6 text-gray-900" />
+            return (
+              <div
+                key={image._key || index}
+                className={`group relative ${aspectClasses[columns]} rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 bg-gray-50`}
+                onClick={() => openLightbox(index)}
+              >
+                {galleryImageUrl ? (
+                  <Image
+                    src={galleryImageUrl}
+                    alt={image.alt || `Gallery image ${index + 1}`}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300">
+                    <Package className="w-10 h-10" />
+                  </div>
+                )}
+
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-500 flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
+                    <div className="w-14 h-14 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-xl">
+                      <ZoomIn className="w-6 h-6 text-gray-900" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Caption */}
-              {image.caption && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-white text-sm font-medium">{image.caption}</p>
-                </div>
-              )}
-            </div>
-          ))}
+                {/* Caption */}
+                {image.caption && (
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-white text-sm font-medium">{image.caption}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

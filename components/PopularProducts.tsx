@@ -1,4 +1,3 @@
-// src/components/PopularProducts.tsx
 'use client';
 
 import Link from 'next/link';
@@ -87,7 +86,8 @@ export default function PopularProducts({
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
+            // Agar kisi product ka unique _id missing ho to fallback index lagaya taake react key throw na kare
+            <ProductCard key={product?._id || product?.slug?.current} product={product} />
           ))}
         </div>
 

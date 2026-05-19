@@ -1,20 +1,10 @@
-// src/components/ContentBoxes.tsx
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
+import { urlFor } from '@/lib/sanity'; // 👈 Centralized super safe wrapper use kiya
 import RichTextRenderer from './RichTextRenderer';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
 
 interface Box {
   _key: string;
@@ -98,7 +88,7 @@ export default function ContentBoxes({
         {/* Content Boxes Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {boxes.map((box, index) => (
-            <ContentBoxItem key={box._key} box={box} index={index} isDarkSection={isDark} />
+            <ContentBoxItem key={box._key || index} box={box} index={index} isDarkSection={isDark} />
           ))}
         </div>
       </div>
@@ -107,12 +97,12 @@ export default function ContentBoxes({
 }
 
 function ContentBoxItem({ box, index, isDarkSection }: { box: Box; index: number; isDarkSection: boolean }) {
-  // ðŸ‘‡ FORCE DARK BACKGROUND when section is dark, ignore box's own backgroundColor
+  // FORCE DARK BACKGROUND when section is dark, ignore box's own backgroundColor
   const boxBackground = isDarkSection 
-    ? '#1f2937'  // ðŸ‘ˆ Force dark gray for all boxes when section is dark
+    ? '#1f2937'  // Force dark gray for all boxes when section is dark
     : (box.backgroundColor || '#ffffff'); // Respect box background only in light mode
   
-  const isDarkBox = isDarkSection; // ðŸ‘ˆ Simple - if section is dark, box is dark
+  const isDarkBox = isDarkSection; // Simple - if section is dark, box is dark
 
   const roundClasses = {
     medium: 'rounded-lg',
@@ -130,6 +120,18 @@ function ContentBoxItem({ box, index, isDarkSection }: { box: Box; index: number
   const noImageBg = isDarkBox ? 'bg-gray-700' : 'bg-gray-100';
   const noImageText = isDarkBox ? 'text-gray-400' : 'text-gray-400';
 
+  // ───── Safe Box-Image URL Resolution ─────
+  let boxImageUrl = '';
+  if (box?.image) {
+    try {
+      boxImageUrl = typeof box.image === 'string' && box.image.startsWith('http')
+        ? box.image
+        : urlFor(box.image).width(120).height(120).url();
+    } catch (err) {
+      console.error(`Error building ContentBox image URL at index ${index}:`, err);
+    }
+  }
+
   return (
     <div
       style={{ backgroundColor: boxBackground }}
@@ -142,10 +144,10 @@ function ContentBoxItem({ box, index, isDarkSection }: { box: Box; index: number
       <div className="flex flex-row items-stretch h-full min-h-[160px]">
         {/* Image */}
         <div className="w-[25%] min-w-[80px] flex-shrink-0 flex items-center justify-center p-4">
-          {box.image ? (
+          {boxImageUrl ? (
             <div className="relative w-full aspect-square max-w-[80px]">
               <Image
-                src={getImageUrl(box.image, 120)}
+                src={boxImageUrl}
                 alt={box.imageAlt || 'Content image'}
                 fill
                 sizes="10vw"

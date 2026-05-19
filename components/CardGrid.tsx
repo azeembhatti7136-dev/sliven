@@ -1,20 +1,10 @@
-// src/components/CardGrid.tsx
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Package } from 'lucide-react';
+import { urlFor } from '@/lib/sanity'; // 👈 Centralized safe handler use kiya
 import RichTextRenderer from './RichTextRenderer';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
 
 interface Card {
   _key: string;
@@ -82,7 +72,7 @@ export default function CardGrid({
         {/* Cards Grid - 3 PER ROW */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {cards.map((card, index) => (
-            <CardItem key={card._key} card={card} index={index} isDark={isDark} />
+            <CardItem key={card._key || index} card={card} index={index} isDarkSection={isDark} />
           ))}
         </div>
       </div>
@@ -90,9 +80,15 @@ export default function CardGrid({
   );
 }
 
-function CardItem({ card, index, isDark }: { card: Card; index: number; isDark: boolean }) {
-  const borderColor = isDark ? 'border-gray-700' : 'border-gray-100';
-  const hoverBorderColor = isDark ? 'hover:border-gray-600' : 'hover:border-amber-200';
+function CardItem({ card, index, isDarkSection }: { card: Card; index: number; isDarkSection: boolean }) {
+  // If the wrapper section is dark, build a dark layout context for the card
+  const isDarkCard = isDarkSection || card.backgroundColor === '#111827' || card.backgroundColor === '#1f2937';
+  
+  const borderColor = isDarkCard ? 'border-gray-700' : 'border-gray-100';
+  const hoverBorderColor = isDarkCard ? 'hover:border-gray-600' : 'hover:border-amber-200';
+  const titleColor = isDarkCard ? 'text-white' : 'text-gray-900';
+  const descColor = isDarkCard ? 'text-gray-300' : 'text-gray-600';
+  const fallbackBg = isDarkCard ? 'bg-gray-800' : 'bg-gray-100';
 
   const accentColors = [
     'from-amber-400 to-orange-500',
@@ -105,57 +101,79 @@ function CardItem({ card, index, isDark }: { card: Card; index: number; isDark: 
 
   const accent = accentColors[index % accentColors.length];
 
+  // ───── Safe Card Icon/Image URL Builder ─────
+  let cardImageUrl = '';
+  if (card?.image) {
+    try {
+      cardImageUrl = typeof card.image === 'string' && card.image.startsWith('http')
+        ? card.image
+        : urlFor(card.image).width(100).height(100).url();
+    } catch (err) {
+      console.error(`Error building CardGrid image URL at index ${index}:`, err);
+    }
+  }
+
   const CardContent = (
     <>
       {/* Image - TOP CENTERED, ICON SIZE */}
       <div className="flex justify-center pt-8 pb-2">
         <div className="relative w-16 h-16 sm:w-20 sm:h-20">
-          {card.image ? (
+          {cardImageUrl ? (
             <Image
-              src={getImageUrl(card.image, 100)}
+              src={cardImageUrl}
               alt={card.imageAlt || card.cardTitle}
               fill
               sizes="80px"
               className="object-contain"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
-              <span className="text-gray-400 text-[10px]">No Image</span>
+            <div className={`w-full h-full ${fallbackBg} rounded-2xl flex items-center justify-center`}>
+              <Package className="w-6 h-6 text-gray-400 opacity-40" />
             </div>
           )}
         </div>
       </div>
 
       {/* Content - CENTER ALIGNED */}
-      <div className="p-5 sm:p-6 pt-0 space-y-3 text-center">
-        {/* Title */}
-        <h3 className="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors duration-300">
-          {card.cardTitle}
-        </h3>
+      <div className="p-5 sm:p-6 pt-0 space-y-3 text-center flex-1 flex flex-col justify-between">
+        <div className="space-y-3">
+          {/* Title */}
+          <h3 className={`text-lg font-bold ${titleColor} group-hover:text-amber-600 transition-colors duration-300`}>
+            {card.cardTitle}
+          </h3>
 
-        {/* Description */}
-        {card.cardDescription && (
-          <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
-            {card.cardDescription}
-          </p>
-        )}
+          {/* Description */}
+          {card.cardDescription && (
+            <p className={`text-sm ${descColor} leading-relaxed line-clamp-3`}>
+              {card.cardDescription}
+            </p>
+          )}
+        </div>
 
         {/* Bottom Accent Line - CENTERED */}
-        <div className="flex justify-center">
+        <div className="flex justify-center pt-2">
           <div className={`h-1 w-10 rounded-full bg-gradient-to-r ${accent} group-hover:w-20 transition-all duration-500`} />
         </div>
       </div>
     </>
   );
 
-  const cardClasses = `group bg-white rounded-2xl border ${borderColor} ${hoverBorderColor} shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 flex flex-col`;
+  const cardClasses = `group rounded-2xl border ${borderColor} ${hoverBorderColor} shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-2 flex flex-col h-full`;
+  const defaultBg = isDarkSection ? '#1f2937' : '#ffffff';
 
   return card.link ? (
-    <Link href={card.link} className={cardClasses} style={{ backgroundColor: card.backgroundColor }}>
+    <Link 
+      href={card.link} 
+      className={cardClasses} 
+      style={{ backgroundColor: card.backgroundColor || defaultBg }}
+    >
       {CardContent}
     </Link>
   ) : (
-    <div className={cardClasses} style={{ backgroundColor: card.backgroundColor }}>
+    <div 
+      className={cardClasses} 
+      style={{ backgroundColor: card.backgroundColor || defaultBg }}
+    >
       {CardContent}
     </div>
   );

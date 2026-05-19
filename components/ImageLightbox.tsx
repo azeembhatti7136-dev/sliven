@@ -1,19 +1,9 @@
-// src/components/ImageLightbox.tsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
+import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Package } from 'lucide-react';
+import { urlFor } from '@/lib/sanity'; // 👈 Centralized super safe wrapper use kiya
 
 interface GalleryImage {
   _key: string;
@@ -84,6 +74,18 @@ export default function ImageLightbox({
 
   const currentImage = images[currentIndex];
 
+  // ───── Safe Main High-Res Image URL Builder ─────
+  let mainLightboxUrl = '';
+  if (currentImage) {
+    try {
+      mainLightboxUrl = typeof currentImage === 'string' && currentImage.startsWith('http')
+        ? currentImage
+        : urlFor(currentImage).width(1920).height(1080).url();
+    } catch (err) {
+      console.error("Error building lightbox main preview image:", err);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center">
       {/* Close Button */}
@@ -124,16 +126,23 @@ export default function ImageLightbox({
         }`}
         onClick={() => setIsZoomed(!isZoomed)}
       >
-        <Image
-          src={getImageUrl(currentImage, 1920, 1080)}
-          alt={currentImage.alt || `Gallery image ${currentIndex + 1}`}
-          fill
-          className={`object-contain transition-transform duration-500 ${
-            isZoomed ? 'scale-150' : 'scale-100'
-          }`}
-          sizes="100vw"
-          priority
-        />
+        {mainLightboxUrl ? (
+          <Image
+            src={mainLightboxUrl}
+            alt={currentImage.alt || `Gallery image ${currentIndex + 1}`}
+            fill
+            className={`object-contain transition-transform duration-500 ${
+              isZoomed ? 'scale-150' : 'scale-100'
+            }`}
+            sizes="100vw"
+            priority
+          />
+        ) : (
+          <div className="text-gray-500 flex flex-col items-center gap-2">
+            <Package className="w-16 h-16 opacity-40" />
+            <span className="text-sm">Preview Image Unavailable</span>
+          </div>
+        )}
 
         {/* Caption */}
         {currentImage.caption && (
@@ -155,30 +164,50 @@ export default function ImageLightbox({
 
       {/* Thumbnail Strip */}
       {images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-2">
-          {images.map((image, index) => (
-            <button
-              key={image._key}
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrentIndex(index);
-                setIsZoomed(false);
-              }}
-              className={`w-10 h-10 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-                index === currentIndex
-                  ? 'border-amber-500 scale-110'
-                  : 'border-transparent opacity-50 hover:opacity-100'
-              }`}
-            >
-              <Image
-                src={getImageUrl(image, 80, 80)}
-                alt={image.alt || `Thumbnail ${index + 1}`}
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
-              />
-            </button>
-          ))}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-2 z-20">
+          {images.map((image, index) => {
+            // ───── Safe Thumbnail Image URL Builder ─────
+            let thumbUrl = '';
+            if (image) {
+              try {
+                thumbUrl = typeof image === 'string' && image.startsWith('http')
+                  ? image
+                  : urlFor(image).width(80).height(80).url();
+              } catch (err) {
+                console.error(`Error building lightbox thumbnail at index ${index}:`, err);
+              }
+            }
+
+            return (
+              <button
+                key={image._key || index}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentIndex(index);
+                  setIsZoomed(false);
+                }}
+                className={`w-10 h-10 rounded-lg overflow-hidden border-2 transition-all duration-300 bg-gray-900 ${
+                  index === currentIndex
+                    ? 'border-amber-500 scale-110'
+                    : 'border-transparent opacity-50 hover:opacity-100'
+                }`}
+              >
+                {thumbUrl ? (
+                  <Image
+                    src={thumbUrl}
+                    alt={image.alt || `Thumbnail ${index + 1}`}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
+                    -
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
