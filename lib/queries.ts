@@ -1,4 +1,3 @@
-// src/lib/queries.ts
 import { client } from './sanityClient.server';
 
 export async function getAllProducts(): Promise<any[]> {
@@ -53,19 +52,25 @@ export async function getProductBySlug(slug: string) {
   `, { slug });
 }
 
+// ⚡ FIXED: Image projection ko hataya taake original ref object builder ko mile
+// ⚡ EXTRA: products array ko fetch kiya taake page par card ke neeche count breakdown theek ho sake
 export async function getAllCollections(): Promise<any[]> {
   return client.fetch(`*[_type == "simpleCollection"] | order(title asc) {
-    _id, title, slug, description, 
-    image { asset->{ url } },
+    _id, 
+    title, 
+    slug, 
+    description, 
+    image, // 👈 Pura sanity image reference pass karein, direct url projection nahi!
     "imageUrl": image.asset->url,
-    "productCount": count(*[_type == "simpleProduct" && references(^._id)])
+    "productCount": count(*[_type == "simpleProduct" && references(^._id)]),
+    "products": *[_type == "simpleProduct" && references(^._id)] { _id } // 👈 Frontend array lengths fallback ke liye zaroori hai
   }`);
 }
 
 export async function getCollectionBySlug(slug: string): Promise<any> {
   return client.fetch(`*[_type == "simpleCollection" && slug.current == $slug][0] {
     _id, title, slug, description, 
-    image { asset->{ url } },
+    image, // 👈 Cleaned up
     "imageUrl": image.asset->url,
     "products": *[_type == "simpleProduct" && references(^._id)] | order(title asc) {
       _id, title, slug, price, compareAtPrice, brand, manufacturer, color, pattern,
@@ -113,7 +118,6 @@ export async function getRelatedProducts(collectionId: string, currentSlug: stri
   `, { collectionId, currentSlug });
 }
 
-// Get all pages
 export async function getAllPages(): Promise<any[]> {
   return client.fetch(`
     *[_type == "page"] | order(title asc) {
