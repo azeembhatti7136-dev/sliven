@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn.sanity.io',
         port: '',
-        pathname: '/images/**',
+        pathname: '/**', // 👈 Change this from '/images/**' to '/**'
       },
     ],
     unoptimized: true,
