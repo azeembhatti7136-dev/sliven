@@ -1,10 +1,11 @@
 // src/lib/queries.ts
-import { client } from './sanityClient.server'; // 👈 CHANGED: './sanity' -> './sanityClient.server'
+import { client } from './sanityClient.server';
 
 export async function getAllProducts(): Promise<any[]> {
   return client.fetch(`*[_type == "simpleProduct"] | order(title asc) {
     _id, title, slug, sku, brand, manufacturer, color, pattern,
-    images[] { _key, asset->, alt },
+    images[] { _key, asset->{ url }, alt },
+    "imageUrl": images[0].asset->url,
     "collections": collections[]->{_id, title, slug},
     price, compareAtPrice, features, specifications, stock, tags, quoteSettings
   }`);
@@ -29,8 +30,9 @@ export async function getProductBySlug(slug: string) {
       "images": images[] {
         _key,
         "alt": alt,
-        asset->
+        asset->{ url }
       },
+      "imageUrl": images[0].asset->url,
       "collections": collections[]->{
         _id,
         title,
@@ -53,18 +55,23 @@ export async function getProductBySlug(slug: string) {
 
 export async function getAllCollections(): Promise<any[]> {
   return client.fetch(`*[_type == "simpleCollection"] | order(title asc) {
-    _id, title, slug, description, image,
+    _id, title, slug, description, 
+    image { asset->{ url } },
+    "imageUrl": image.asset->url,
     "productCount": count(*[_type == "simpleProduct" && references(^._id)])
   }`);
 }
 
 export async function getCollectionBySlug(slug: string): Promise<any> {
   return client.fetch(`*[_type == "simpleCollection" && slug.current == $slug][0] {
-    _id, title, slug, description, image,
+    _id, title, slug, description, 
+    image { asset->{ url } },
+    "imageUrl": image.asset->url,
     "products": *[_type == "simpleProduct" && references(^._id)] | order(title asc) {
       _id, title, slug, price, compareAtPrice, brand, manufacturer, color, pattern,
-      "images": images[] { _key, asset->, alt },
-      "image": images[0],
+      "images": images[] { _key, asset->{ url }, alt },
+      "imageUrl": images[0].asset->url,
+      "image": images[0] { asset->{ url } },
       features, specifications, stock, tags, quoteSettings
     }
   }`, { slug });
@@ -73,7 +80,8 @@ export async function getCollectionBySlug(slug: string): Promise<any> {
 export async function getFeaturedProducts(limit: number = 8): Promise<any[]> {
   return client.fetch(`*[_type == "simpleProduct"][0..${limit - 1}] {
     _id, title, slug, brand, manufacturer, color, pattern,
-    "image": images[0],
+    "image": images[0] { asset->{ url } },
+    "imageUrl": images[0].asset->url,
     "collections": collections[]->{_id, title, slug},
     price, compareAtPrice, stock, quoteSettings
   }`);
@@ -90,7 +98,8 @@ export async function getRelatedProducts(collectionId: string, currentSlug: stri
       _id,
       title,
       slug,
-      "image": images[0],
+      "image": images[0] { asset->{ url } },
+      "imageUrl": images[0].asset->url,
       features,
       stock,
       tags,
@@ -113,7 +122,7 @@ export async function getAllPages(): Promise<any[]> {
       slug,
       showHero,
       hero {
-        backgroundImage,
+        backgroundImage { asset->{ url } },
         overlayOpacity,
         title,
         subtitle,
