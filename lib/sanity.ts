@@ -13,7 +13,7 @@ interface ImageBuilder {
 }
 
 const dummyBuilder: ImageBuilder = {
-  url: () => '/placeholder.png',
+ url: () => '',
   width: () => dummyBuilder,
   height: () => dummyBuilder,
   format: () => dummyBuilder,
