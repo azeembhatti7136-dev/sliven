@@ -24,7 +24,7 @@ import Testimonial from '@/components/Testimonial';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// Fetch home page data
+// Fetch home page data with Deep-Nested GROQ Projections
 async function getHomePage() {
   return client.fetch(
     `*[_type == "home"][0] {
@@ -45,8 +45,8 @@ async function getHomePage() {
         _type == "videoWithText" => {
           title,
           layout,
-          "titleRichText": titleRichText.text,
-          "descriptionRichText": descriptionRichText.text,
+          titleRichText,
+          descriptionRichText,
           videoUrl,
           videoType,
           videoThumbnail,
@@ -54,9 +54,9 @@ async function getHomePage() {
         },
         _type == "featuresSection" => {
           sectionTitle,
-          "title": title.text,
+          title,
           subtitle,
-          features {
+          features[] {
             _key,
             icon,
             title,
@@ -67,9 +67,9 @@ async function getHomePage() {
         },
         _type == "testimonial" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
-          testimonials { 
+          testimonials[] { 
             _key, 
             name, 
             role, 
@@ -81,9 +81,9 @@ async function getHomePage() {
         },
         _type == "stepsCard" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
-          steps { 
+          steps[] { 
             _key, 
             stepNumber, 
             title, 
@@ -94,9 +94,9 @@ async function getHomePage() {
         },
         _type == "timeline" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
-          steps { 
+          steps[] { 
             _key, 
             stepNumber, 
             title, 
@@ -107,26 +107,26 @@ async function getHomePage() {
         },
         _type == "faq" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
-          faqs {
+          faqs[] {
             _key,
             question,
-            "answer": answer.text
+            answer
           },
           columns,
           backgroundColor
         },
         _type == "imageTextSection" => {
-          "title": title.text,
+          title,
           subtitle,
           backgroundImage,
           backgroundOpacity, 
-          sections {
+          sections[] {
             _key,
             layout,
-            "title": title.text,
-            "description": description.text,
+            title,
+            description,
             image,
             imageAlt,
             buttonText,
@@ -136,7 +136,7 @@ async function getHomePage() {
         },
         _type == "contactForm" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
           contactImage,
           backgroundColor,
@@ -147,9 +147,9 @@ async function getHomePage() {
         },
         _type == "imageGallery" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
-          images {
+          images[] {
             _key,
             asset,
             alt,
@@ -161,7 +161,7 @@ async function getHomePage() {
         },
         _type == "popularProducts" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
           products[]-> {
             _id,
@@ -170,9 +170,9 @@ async function getHomePage() {
             slug,
             price,
             compareAtPrice,
-            "images": images {
+            images[] {
               _key,
-              "asset": asset->,
+              asset,
               alt
             },
             "image": images[0],
@@ -187,15 +187,15 @@ async function getHomePage() {
         },
         _type == "contentBox" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
-          boxes {
+          boxes[] {
             _key,
             layout,
             image,
             imageAlt,
-            "boxTitle": boxTitle.text,
-            "boxDescription": boxDescription.text,
+            boxTitle,
+            boxDescription,
             features,
             buttonText,
             buttonLink,
@@ -206,7 +206,7 @@ async function getHomePage() {
         },
         _type == "featuredCollections" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
           collections[]-> {
             _id,
@@ -214,7 +214,7 @@ async function getHomePage() {
             slug,
             description,
             image,
-            "products": products[]-> {
+            products[]-> {
               _id,
               title
             }
@@ -224,7 +224,7 @@ async function getHomePage() {
         },
         _type == "featuredProduct" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
           product-> {
             _id,
@@ -234,9 +234,9 @@ async function getHomePage() {
             sku,
             price,
             compareAtPrice,
-            "images": images { 
+            images[] { 
               _key, 
-              "asset": asset->, 
+              asset, 
               alt 
             },
             description,
@@ -252,9 +252,9 @@ async function getHomePage() {
         },
         _type == "cardGrid" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
-          cards {
+          cards[] {
             _key,
             image,
             imageAlt,
@@ -267,9 +267,9 @@ async function getHomePage() {
         },
         _type == "partnerSlider" => {
           sectionLabel,
-          "title": title.text,
+          title,
           subtitle,
-          logos { 
+          logos[] { 
             _key, 
             image, 
             name, 
@@ -280,8 +280,8 @@ async function getHomePage() {
         _type == "hero" => {
           backgroundImage,
           overlayOpacity,
-          "title": title.text,
-          "subtitle": subtitle.text,
+          title,
+          subtitle,
           showButton,
           buttonText,
           buttonLink,
@@ -290,8 +290,8 @@ async function getHomePage() {
         }
       }
     }`,
-    {}, // empty params
-    { cache: 'no-store' } // 👈 Correctly passed outside of the GROQ string!
+    {}, 
+    { cache: 'no-store' } 
   );
 }
 
@@ -300,7 +300,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Dynamic Hero from Sanity */}
+      {/* Top Root Hero Block */}
       {homePage?.hero ? (
         <Hero {...homePage.hero} />
       ) : (
@@ -319,7 +319,7 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Render Modules */}
+      {/* Render All Dynamic Modules */}
       {homePage?.modules?.map((module: any) => {
         if (module._type === 'featuresSection') {
           return <FeaturesSection key={module._key} {...module} />;
