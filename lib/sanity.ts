@@ -1,5 +1,5 @@
 // src/lib/sanity.ts
-// ✅ COMPLETELY SAFE - No @sanity imports!
+// ✅ COMPLETELY SAFE & BULLETPROOF - No @sanity imports!
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'd2zeiu5j';
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
@@ -13,7 +13,7 @@ interface ImageBuilder {
 }
 
 const dummyBuilder: ImageBuilder = {
- url: () => '',
+  url: () => '',
   width: () => dummyBuilder,
   height: () => dummyBuilder,
   format: () => dummyBuilder,
@@ -31,27 +31,40 @@ export function urlFor(source: any): ImageBuilder {
   if (!ref) return dummyBuilder;
 
   // ref format: image-{id}-{WIDTH}x{HEIGHT}-{format}
-  // ID can contain hyphens! Eg: image-d4b32bdcb36c48b9db9453164f6f7e22167e7b90-1920x600-jpg
   const match = ref.match(/^image-(.+)-(\d+x\d+)-(\w+)$/);
-  
   if (!match) return dummyBuilder;
   
-  const id = match[1];    // d4b32bdcb36c48b9db9453164f6f7e22167e7b90
-  const dims = match[2];  // 1920x600
-  const fmt = match[3];   // jpg
+  const id = match[1];     // Asset ID
+  const dims = match[2];   // e.g., "1920x600"
+  const fmt = match[3];    // Extension
 
-  let w = 800;
-  let h = 600;
+  // Original dimensions nikalwain takay agar user height na de, to image transform bigre nahi
+  const [origW, origH] = dims.split('x').map(Number);
+
+  let targetW: number | null = null;
+  let targetH: number | null = null;
   let f = fmt;
   let q = 80;
 
-  const buildUrl = (): string => 
-    `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-${w}x${h}.${f}?q=${q}`;
+  const buildUrl = (): string => {
+    // Agar sirf width di ho to auto-aspect ratio set karein takay stretch na ho
+    if (targetW && !targetH) {
+      targetH = Math.round((targetW / origW) * origH);
+    } else if (targetH && !targetW) {
+      targetW = Math.round((targetH / origH) * origW);
+    }
+
+    const finalW = targetW || origW;
+    const finalH = targetH || origH;
+
+    // Sanity standard asset url format with exact query modifiers
+    return `https://cdn.sanity.io/images/${projectId}/${dataset}/${id}-${finalW}x${finalH}.${f}?q=${q}&auto=format`;
+  };
 
   const builder: ImageBuilder = {
     url: buildUrl,
-    width: (width: number) => { w = width; return builder; },
-    height: (height: number) => { h = height; return builder; },
+    width: (width: number) => { targetW = width; return builder; },
+    height: (height: number) => { targetH = height; return builder; },
     format: (format: string) => { f = format; return builder; },
     quality: (quality: number) => { q = quality; return builder; },
   };
