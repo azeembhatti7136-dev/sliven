@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { ZoomIn, Package } from 'lucide-react';
-import { urlFor } from '@/lib/sanity'; // 👈 Centralized super safe wrapper use kiya
+import { urlFor } from '@/lib/sanity';
 import RichTextRenderer from './RichTextRenderer';
 import ImageLightbox from './ImageLightbox';
 
@@ -67,7 +67,6 @@ export default function ImageGallery({
 
   return (
     <section style={{ backgroundColor }} className="relative overflow-hidden">
-      {/* Decorative Background */}
       {!isDark && (
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 right-10 w-80 h-80 bg-amber-50 rounded-full blur-3xl opacity-40" />
@@ -100,11 +99,12 @@ export default function ImageGallery({
         {/* Gallery Grid */}
         <div className={`grid ${columnClasses[columns]} ${gapClasses[gap]}`}>
           {images.map((image, index) => {
-            // ───── Safe Gallery Image URL Resolution ─────
+            // ───── Fixed & Type-Safe Image URL Resolution ─────
             let galleryImageUrl = '';
             if (image) {
               try {
-                galleryImageUrl = typeof image === 'string' && image.startsWith('http')
+                // (image as any) use karne se TypeScript 'startsWith' par tight nahi hoga
+                galleryImageUrl = typeof image === 'string' && (image as any).startsWith('http')
                   ? image
                   : urlFor(image).width(600).height(600).url();
               } catch (err) {
@@ -153,7 +153,6 @@ export default function ImageGallery({
         </div>
       </div>
 
-      {/* Lightbox */}
       <ImageLightbox
         images={images}
         initialIndex={currentImageIndex}
