@@ -75,13 +75,31 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
             const isEven = index % 2 === 0;
             const isLast = index === steps.length - 1;
 
-            // 👇 High-Fidelity Safe Fallback Image Parser Matrix
+            // 👇 ⚡ Secure Fallback Parser Matrix (404 Issue Fix)
             const hasImageObj = step.image && (step.image.asset || step.image._ref);
-            const resolvedImageUrl = step.imageUrl 
-              ? step.imageUrl 
-              : hasImageObj 
-                ? urlFor(step.image).width(600).height(400).format('webp').url() 
-                : null;
+            let resolvedImageUrl = null;
+
+            if (step.imageUrl) {
+              resolvedImageUrl = step.imageUrl;
+            } else if (hasImageObj) {
+              try {
+                // Pehle standard logic chalane ki koshish karein
+                resolvedImageUrl = urlFor(step.image).width(600).height(400).format('webp').url();
+              } catch (err) {
+                // Agar builder fail ho ya string format kharab kare, toh khud manual transform karein
+                const assetRef = step.image.asset?._ref || step.image._ref;
+                if (assetRef) {
+                  const parts = assetRef.split('-');
+                  const id = parts[1];
+                  const dimensions = parts[2];
+                  const ext = parts[3] || 'jpg';
+                  
+                  if (id && dimensions) {
+                    resolvedImageUrl = `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${dimensions}.${ext}?w=600&h=400&auto=format`;
+                  }
+                }
+              }
+            }
 
             return (
               <motion.div
@@ -118,7 +136,7 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 30vw"
                         className="object-cover transform group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-                        priority={index < 2} // Initial items image loading speed optimization
+                        priority={index < 2} 
                       />
                     </div>
                   )}
