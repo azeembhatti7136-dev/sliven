@@ -10,17 +10,14 @@ const nextConfig: NextConfig = {
         pathname: '/images/**',
       },
     ],
+    unoptimized: true,
   },
   
   serverExternalPackages: [
     '@sanity/client',
-    '@sanity/image-url',
-    '@sanity/eventsource',  // 👈 ADD
-    'get-it',               // 👈 ADD
-    'next-sanity',
+    '@sanity/eventsource',
+    'get-it',
     'sanity',
-    '@sanity/visual-editing',
-    '@sanity/preview-url-secret',
   ],
 };
 
