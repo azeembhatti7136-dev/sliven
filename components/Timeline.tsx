@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { urlFor } from '@/lib/sanity'; 
@@ -25,6 +26,9 @@ interface TimelineProps {
 export default function Timeline({ sectionLabel, title, subtitle, steps, backgroundColor = '#ffffff' }: TimelineProps) {
   const isDark = backgroundColor === '#111827' || backgroundColor === '#000000';
   
+  // ⚡ Track broken status for each image step index
+  const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
+
   // ⚡ Dynamic Responsive Semantic Color Mapping
   const textColor = isDark ? 'text-white' : 'text-gray-900';
   const headingColor = isDark ? 'text-amber-400' : 'text-gray-900';
@@ -83,10 +87,8 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
               resolvedImageUrl = step.imageUrl;
             } else if (hasImageObj) {
               try {
-                // Pehle standard logic chalane ki koshish karein
                 resolvedImageUrl = urlFor(step.image).width(600).height(400).format('webp').url();
               } catch (err) {
-                // Agar builder fail ho ya string format kharab kare, toh khud manual transform karein
                 const assetRef = step.image.asset?._ref || step.image._ref;
                 if (assetRef) {
                   const parts = assetRef.split('-');
@@ -129,15 +131,34 @@ export default function Timeline({ sectionLabel, title, subtitle, steps, backgro
 
                   {/* ⚡ Secure Image Core Container Box */}
                   {resolvedImageUrl && (
-                    <div className={`relative h-44 lg:h-52 rounded-2xl overflow-hidden mb-5 ${isDark ? 'bg-gray-950' : 'bg-gray-100'}`}>
-                      <Image
-                        src={resolvedImageUrl}
-                        alt={step.title || 'Timeline step asset process'}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 30vw"
-                        className="object-cover transform group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-                        priority={index < 2} 
-                      />
+                    <div className={`relative h-44 lg:h-52 rounded-2xl overflow-hidden mb-5 flex items-center justify-center transition-all duration-300 ${
+                      brokenImages[index] 
+                        ? `bg-gradient-to-br ${isDark ? 'from-amber-950/30 to-orange-950/20 border border-gray-800' : 'from-amber-50/60 to-orange-50/40 border border-amber-100/50'}` 
+                        : (isDark ? 'bg-gray-950' : 'bg-gray-100')
+                    }`}>
+                      {!brokenImages[index] ? (
+                        <Image
+                          src={resolvedImageUrl}
+                          alt={step.title || 'Timeline step asset process'}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 40vw, 30vw"
+                          className="object-cover transform group-hover:scale-[1.03] transition-transform duration-500 ease-out"
+                          priority={index < 2} 
+                          // If CDN fails with 404, trigger visual fallback state instantly
+                          onError={() => {
+                            setBrokenImages(prev => ({ ...prev, [index]: true }));
+                          }}
+                        />
+                      ) : (
+                        <div className="text-center p-4 animate-pulse">
+                          <svg className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-amber-500/40' : 'text-amber-600/40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                          <span className={`text-xs font-semibold tracking-wide uppercase ${isDark ? 'text-amber-500/50' : 'text-amber-600/60'} block`}>
+                            Media Syncing
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
 
