@@ -19,7 +19,7 @@ function getImageUrl(image: any, width: number = 800, height?: number): string {
 
 export default function ProductCard({ product, compact = false }: { product: any; compact?: boolean }) {
   const isQuoteProduct = product.quoteSettings?.enableQuote || false;
-  const imageUrl = product.imageUrl || (product.image?.asset?.url) || (product.images?.[0]?.asset?.url) || '';
+  const imageUrl = product.imageUrl || '';
 
   return (
     <div className={`group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col ${compact ? 'w-[380px] h-[450px]' : ''}`}>
