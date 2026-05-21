@@ -8,8 +8,8 @@ import QuoteButton from './QuoteButton';
 export default function ProductCard({ product, compact = false }: { product: any; compact?: boolean }) {
   const isQuoteProduct = product.quoteSettings?.enableQuote || false;
   
-  // Yahan humne query se milne wala direct URL utha liya
-  const imageUrl = product.images?.[0] || '';
+  // ✅ Ab seedha URL string milega query se
+  const imageUrl = product.imageUrl || '';
 
   return (
     <div className={`group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col ${compact ? 'w-[380px] h-[450px]' : ''}`}>
@@ -20,7 +20,7 @@ export default function ProductCard({ product, compact = false }: { product: any
             alt={product.title} 
             fill 
             unoptimized 
-            sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw"} 
+            sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw)"} 
             className="object-cover group-hover:scale-105 transition-transform duration-500" 
           />
         ) : (

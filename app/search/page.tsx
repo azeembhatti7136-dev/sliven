@@ -1,3 +1,4 @@
+// src/app/search/page.tsx
 import { client } from '@/lib/sanityClient.server';
 import ProductCard from '@/components/ProductCard';
 
@@ -5,17 +6,14 @@ export const dynamic = 'force-dynamic';
 
 async function searchProducts(query: string) {
   if (!query) return [];
-  
-  // ⚡ Fix: Query ko template literal mein sahi se define karein 
-  // aur params ko object mein pass karein.
   return client.fetch(
-    `*[_type == "simpleProduct" && (title match $searchQuery || tags[] match $searchQuery || features[] match $searchQuery)] {
-      _id, title, slug, sku, price, compareAtPrice,
-      "images": images[].asset->url, 
+    `*[_type == "simpleProduct" && (title match $query || tags[] match $query || features[] match $query)] {
+      _id, title, slug, sku,
+      "imageUrl": images[0].asset->url,
       "collection": collection->{_id, title, slug},
-      features, stock, tags, quoteSettings
+      price, compareAtPrice, features, stock, tags, quoteSettings
     }`,
-    { searchQuery: `*${query}*` } // 👈 Yahan key ka naam change kiya
+    { query: `*${query}*` } as any
   );
 }
 
@@ -29,7 +27,6 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Search Results</h1>
         <p className="text-gray-500 mb-8">{q ? `Showing results for "${q}"` : 'Enter a search term'}</p>
-        
         {products.length === 0 ? (
           <div className="text-center py-20"><p className="text-gray-400">No products found.</p></div>
         ) : (
