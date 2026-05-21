@@ -8,7 +8,6 @@ import { PortableText } from '@portabletext/react';
 import { Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import QuoteButton from '@/components/QuoteButton';
 import ProductCard from '@/components/ProductCard';
-import { urlFor } from '@/lib/sanity';
 
 const richTextComponents = {
   block: {
@@ -42,13 +41,16 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
 
   const allImages = product.images || [];
   const specs = product.specifications || {};
-  const collections = product.collections || []; // ✅ Now it's an array
+  const collections = product.collections || [];
 
+  // ✅ Preload images using direct URLs
   useEffect(() => {
-    allImages.forEach((_: any, index: number) => {
-      const img = new window.Image();
-      img.src = urlFor(allImages[index]).width(1200).height(1200).url();
-      img.onload = () => setLoadedImages((prev) => new Set([...prev, index]));
+    allImages.forEach((img: any, index: number) => {
+      if (img.url) {
+        const image = new window.Image();
+        image.src = img.url + '?w=1200&h=1200&auto=format';
+        image.onload = () => setLoadedImages((prev) => new Set([...prev, index]));
+      }
     });
   }, [allImages]);
 
@@ -67,10 +69,12 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
 
   const currentImage = allImages[currentIndex];
   const isCurrentLoaded = loadedImages.has(currentIndex);
-  const magnifierBgUrl = currentImage ? urlFor(currentImage).width(800).height(800).url() : '';
+  
+  // ✅ Direct URL for magnifier - add quality params
+  const magnifierBgUrl = currentImage?.url 
+    ? `${currentImage.url}?w=800&h=800&auto=format` 
+    : '';
 
-  // 👇 ONLY FILLED SPECS
- // 👇 ONLY FILLED SPECS (Syntax fixed)
   const specsDataList: [string, any][] = [
     ['Brand', product.brand || specs.brand],
     ['Manufacturer', product.manufacturer || specs.manufacturer],
@@ -89,7 +93,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
 
   return (
     <main key={product._id} className="min-h-screen bg-white">
-      {/* ✅ FIXED BREADCRUMB */}
+      {/* Breadcrumb */}
       <div className="bg-gray-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <nav className="flex items-center gap-2 text-sm text-gray-500">
@@ -113,41 +117,104 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
 
       <div className="max-w-7xl mx-auto px-4 py-8 lg:py-12">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
-          {/* Image Gallery - Same as before */}
+          {/* Image Gallery */}
           <div className="space-y-4">
-            <div ref={imageRef} className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 group" onMouseMove={handleMouseMove} onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+            <div 
+              ref={imageRef} 
+              className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 group" 
+              onMouseMove={handleMouseMove} 
+              onMouseEnter={() => setIsHovering(true)} 
+              onMouseLeave={() => setIsHovering(false)}
+            >
               {allImages.length > 0 ? (
                 <>
-                  <Image src={urlFor(currentImage).width(1200).height(1200).url()} alt={currentImage.alt || product.title} fill className={`object-contain p-4 transition-opacity duration-300 ${isCurrentLoaded ? 'opacity-100' : 'opacity-0'}`} sizes="50vw" priority={currentIndex === 0} />
-                  {!isCurrentLoaded && <div className="absolute inset-0 flex items-center justify-center"><div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" /></div>}
+                  <Image 
+                    src={`${currentImage.url}?w=1200&h=1200&auto=format`}
+                    alt={currentImage.alt || product.title} 
+                    fill 
+                    className={`object-contain p-4 transition-opacity duration-300 ${isCurrentLoaded ? 'opacity-100' : 'opacity-0'}`} 
+                    sizes="50vw" 
+                    priority={currentIndex === 0}
+                    unoptimized
+                    onLoad={() => console.log('✅ Main image loaded:', currentImage.url)}
+                    onError={() => console.error('❌ Main image failed:', currentImage.url)}
+                  />
+                  {!isCurrentLoaded && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
                   {isHovering && isCurrentLoaded && (
-                    <div className="absolute pointer-events-none z-50" style={{width:'230px',height:'230px',left:`${mousePosition.x}%`,top:`${mousePosition.y}%`,transform:'translate(-50%,-50%)',borderRadius:'50%',border:'3px solid white',boxShadow:'0 0 0 2px rgba(0,0,0,0.1), 0 20px 50px rgba(0,0,0,0.4)',overflow:'hidden',backgroundImage:`url(${magnifierBgUrl})`,backgroundPosition:`${mousePosition.x}% ${mousePosition.y}%`,backgroundSize:'500% 500%',backgroundRepeat:'no-repeat',backgroundColor:'#f9fafb'}} />
+                    <div 
+                      className="absolute pointer-events-none z-50" 
+                      style={{
+                        width: '230px',
+                        height: '230px',
+                        left: `${mousePosition.x}%`,
+                        top: `${mousePosition.y}%`,
+                        transform: 'translate(-50%,-50%)',
+                        borderRadius: '50%',
+                        border: '3px solid white',
+                        boxShadow: '0 0 0 2px rgba(0,0,0,0.1), 0 20px 50px rgba(0,0,0,0.4)',
+                        overflow: 'hidden',
+                        backgroundImage: `url(${magnifierBgUrl})`,
+                        backgroundPosition: `${mousePosition.x}% ${mousePosition.y}%`,
+                        backgroundSize: '500% 500%',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundColor: '#f9fafb'
+                      }} 
+                    />
                   )}
                   {allImages.length > 1 && (
                     <>
-                      <button onClick={goToPrevious} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 z-200"><ChevronLeft className="w-5 h-5 text-gray-700" /></button>
-                      <button onClick={goToNext} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 z-200"><ChevronRight className="w-5 h-5 text-gray-700" /></button>
+                      <button onClick={goToPrevious} className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
+                        <ChevronLeft className="w-5 h-5 text-gray-700" />
+                      </button>
+                      <button onClick={goToNext} className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 z-20">
+                        <ChevronRight className="w-5 h-5 text-gray-700" />
+                      </button>
                     </>
                   )}
-                  {allImages.length > 1 && <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm font-medium">{currentIndex + 1} / {allImages.length}</div>}
+                  {allImages.length > 1 && (
+                    <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm font-medium">
+                      {currentIndex + 1} / {allImages.length}
+                    </div>
+                  )}
                 </>
-              ) : <div className="flex items-center justify-center h-full text-gray-300"><Package className="w-20 h-20" /></div>}
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-300">
+                  <Package className="w-20 h-20" />
+                </div>
+              )}
             </div>
+            
+            {/* Thumbnails */}
             {allImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {allImages.map((image: any, index: number) => (
-                  <button key={image._key || index} onClick={() => handleThumbnailClick(index)} className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${index === currentIndex ? 'border-amber-500 shadow-md scale-105' : 'border-gray-200 hover:border-gray-300'}`}>
-                    <Image src={urlFor(image).width(160).height(160).url()} alt="" fill className="object-cover" sizes="100px" loading="eager" />
+                  <button 
+                    key={image._key || index} 
+                    onClick={() => handleThumbnailClick(index)} 
+                    className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${index === currentIndex ? 'border-amber-500 shadow-md scale-105' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <Image 
+                      src={`${image.url}?w=160&h=160&auto=format`}
+                      alt="" 
+                      fill 
+                      className="object-cover" 
+                      sizes="100px" 
+                      loading="eager"
+                      unoptimized
+                    />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* ✅ FIXED PRODUCT INFO */}
+          {/* Product Info */}
           <div className="space-y-5">
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Show ALL collections as badges */}
               {collections.length > 0 && collections.map((collection: any) => (
                 <Link 
                   key={collection._id}
@@ -179,14 +246,14 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
             )}
             <div className="space-y-2 pt-2">
               <QuoteButton
-  productId={product._id}
-  productName={product.title}
-  productImage={product.images?.[0]}           // 👈 ADD
-  productSku={product.sku}                     // 👈 ADD
-  productCollection={product.collection?.title} // 👈 ADD
-  buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
-  className="w-full text-base py-3.5"
-/>
+                productId={product._id}
+                productName={product.title}
+                productImage={product.imageUrl || allImages[0]?.url || ''}  // ✅ Fixed: direct URL string
+                productSku={product.sku}
+                productCollection={collections[0]?.title}
+                buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
+                className="w-full text-base py-3.5"
+              />
               <p className="text-xs text-gray-400 text-center">We'll respond within 24 hours</p>
             </div>
           </div>
@@ -194,7 +261,6 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
 
         {/* Bottom: Description + Specs + Related */}
         <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 border-t border-gray-100 pt-12">
-          {/* Description - 3/5 width (60%) */}
           <div className="lg:col-span-3">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Description</h2>
             {product.description ? (
@@ -204,9 +270,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
             ) : <p className="text-gray-400">No description available.</p>}
           </div>
 
-          {/* Right Column - Specs + Related Products */}
           <div className="lg:col-span-2 space-y-10">
-            {/* Product Details */}
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-6">Product Details</h2>
               {specsData.length > 0 ? (
@@ -225,7 +289,6 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
               ) : <p className="text-gray-400 text-sm">No specifications available.</p>}
             </div>
 
-            {/* Related Products - Below Specs */}
             {relatedProducts.length > 0 && (
               <div className="flex flex-col items-center">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Related Products</h2>

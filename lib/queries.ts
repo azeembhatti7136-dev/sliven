@@ -11,45 +11,39 @@ export async function getAllProducts(): Promise<any[]> {
 }
 
 export async function getProductBySlug(slug: string) {
-  return client.fetch(`
-    *[_type == "simpleProduct" && slug.current == $slug][0] {
+  return client.fetch(
+    `*[_type == "simpleProduct" && slug.current == $slug][0] {
       _id,
       title,
       slug,
       sku,
-      brand,
-      manufacturer,
-      color,
-      pattern,
+      price,
+      compareAtPrice,
       description,
       features,
       stock,
       tags,
       quoteSettings,
+      // ✅ Direct URL strings for images
+      "imageUrl": images[0].asset->url,
       "images": images[] {
         _key,
-        "alt": alt,
-        asset->{ url }
+        alt,
+        "url": asset->url  // ✅ URL string directly
       },
-      "imageUrl": images[0].asset->url,
-      "collections": collections[]->{
+      "collections": collections[]-> {
         _id,
         title,
         slug
       },
-      specifications {
-        brand,
-        manufacturer,
-        color,
-        pattern,
-        composition,
-        fabricType,
-        apparelType,
-        productionType,
-        use
-      }
-    }
-  `, { slug });
+      specifications,
+      brand,
+      manufacturer,
+      color,
+      pattern
+    }`,
+    { slug }
+  );
 }
 
 // ⚡ FIXED: Image projection ko hataya taake original ref object builder ko mile
@@ -92,30 +86,16 @@ export async function getFeaturedProducts(limit: number = 8): Promise<any[]> {
   }`);
 }
 
-export async function getRelatedProducts(collectionId: string, currentSlug: string) {
-  if (!collectionId) return [];
-  
-  return client.fetch(`
-    *[_type == "simpleProduct" && 
-      $collectionId in collections[]._ref && 
-      slug.current != $currentSlug
-    ] | order(title asc) [0...8] {
-      _id,
-      title,
-      slug,
-      "image": images[0] { asset->{ url } },
-      "imageUrl": images[0].asset->url,
-      features,
-      stock,
-      tags,
-      quoteSettings,
-      "collections": collections[]->{
-        _id,
-        title,
-        slug
-      }
-    }
-  `, { collectionId, currentSlug });
+export async function getRelatedProducts(collectionId: string, excludeSlug: string) {
+  return client.fetch(
+    `*[_type == "simpleProduct" && collections[0]._ref == $collectionId && slug.current != $excludeSlug][0...4] {
+      _id, title, slug, sku,
+      "imageUrl": images[0].asset->url,  // ✅ Direct URL
+      price, compareAtPrice, features, stock, tags, quoteSettings,
+      "collections": collections[]->{_id, title, slug}
+    }`,
+    { collectionId, excludeSlug }
+  );
 }
 
 // Get all pages (Fixed Image Fetching for urlFor Builder)
