@@ -236,11 +236,9 @@ async function getHomePage() {
             sku,
             price,
             compareAtPrice,
-            images[] { 
-              _key, 
-              asset, 
-              alt 
-            },
+            // ✅ Direct URL strings
+    "imageUrl": images[0].asset->url,
+    "imageUrls": images[].asset->url,
             description,
             features,
             stock,

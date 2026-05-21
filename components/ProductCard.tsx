@@ -8,7 +8,7 @@ import QuoteButton from './QuoteButton';
 export default function ProductCard({ product, compact = false }: { product: any; compact?: boolean }) {
   const isQuoteProduct = product.quoteSettings?.enableQuote || false;
   
-  // ✅ Ab seedha URL string milega query se
+  // ✅ Query se "imageUrl" field aa raha hai ab
   const imageUrl = product.imageUrl || '';
 
   return (
@@ -20,7 +20,7 @@ export default function ProductCard({ product, compact = false }: { product: any
             alt={product.title} 
             fill 
             unoptimized 
-            sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw)"} 
+            sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw"} 
             className="object-cover group-hover:scale-105 transition-transform duration-500" 
           />
         ) : (
