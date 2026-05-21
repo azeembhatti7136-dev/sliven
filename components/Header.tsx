@@ -148,7 +148,7 @@ export default function Header() {
                   <Link
                     key={item._key || idx}
                     href={item.url || '/'}
-                    className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ${navTextClass}`}
+                    className={`px-4 py-2 text-lg font-bold rounded-xl transition-all duration-200 ${navTextClass}`}
                   >
                     {item.label}
                   </Link>
