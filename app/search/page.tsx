@@ -5,14 +5,17 @@ export const dynamic = 'force-dynamic';
 
 async function searchProducts(query: string) {
   if (!query) return [];
+  
+  // ⚡ Fix: Query ko template literal mein sahi se define karein 
+  // aur params ko object mein pass karein.
   return client.fetch(
-    `*[_type == "simpleProduct" && (title match $query || tags[] match $query || features[] match $query)] {
+    `*[_type == "simpleProduct" && (title match $searchQuery || tags[] match $searchQuery || features[] match $searchQuery)] {
       _id, title, slug, sku, price, compareAtPrice,
       "images": images[].asset->url, 
       "collection": collection->{_id, title, slug},
       features, stock, tags, quoteSettings
     }`,
-    { query: `*${query}*` }
+    { searchQuery: `*${query}*` } // 👈 Yahan key ka naam change kiya
   );
 }
 
