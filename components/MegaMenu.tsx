@@ -14,7 +14,7 @@ interface MegaMenuConfig {
     links?: Array<{
       label: string;
       url: string;
-      imageUrl?: string; // 👈 Server-side processed URL
+      imageUrl?: string;
     }>;
   }>;
   showImages?: boolean;
@@ -31,17 +31,22 @@ export default function MegaMenu({ config }: MegaMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // 👇 SAFE CHECK - Return null if no config or columns
   if (!config?.enabled || !config.columns?.length) return null;
 
   const { title = 'Collections', columns = [], showImages = true, viewAllText = 'View All', viewAllUrl = '/collections' } = config;
   const colCount = Math.min(columns.length, 4);
   
-  // 👇 Dynamic grid and width classes based on columns
+  // ✅ DESKTOP: Bade sizes with max-width constraint
   const gridCols = colCount === 4 ? 'grid-cols-4' : colCount === 3 ? 'grid-cols-3' : colCount === 2 ? 'grid-cols-2' : 'grid-cols-1';
   
-  // ⚡ Tip: left-0 ke sath width ko desktop standard par rakhein taake layout responsive rahe
-  const widthClass = colCount === 4 ? 'w-[780px]' : colCount === 3 ? 'w-[620px]' : colCount === 2 ? 'w-[420px]' : 'w-[260px]';
+  // ✅ BADA DROPDOWN WIDTH
+  const widthClass = colCount === 4 
+    ? 'w-[900px] lg:w-[960px]' 
+    : colCount === 3 
+    ? 'w-[720px] lg:w-[780px]' 
+    : colCount === 2 
+    ? 'w-[480px] lg:w-[540px]' 
+    : 'w-[300px] lg:w-[360px]';
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
@@ -63,35 +68,46 @@ export default function MegaMenu({ config }: MegaMenuProps) {
   };
 
   const handleMouseLeave = () => {
-    closeTimer.current = setTimeout(() => setIsOpen(false), 150); // Snappy 150ms timeout
+    closeTimer.current = setTimeout(() => setIsOpen(false), 150);
   };
 
   return (
     <div ref={menuRef} className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      {/* Trigger Button */}
+      {/* ✅ TRIGGER BUTTON - BADA & BOLD */}
       <button 
-        className={`px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all flex items-center gap-1 focus:outline-none ${isOpen ? 'text-white bg-gray-800' : ''}`}
+        className={`
+          px-5 py-2.5 text-lg font-bold rounded-xl transition-all duration-200 
+          flex items-center gap-2 focus:outline-none
+          text-gray-900 hover:text-amber-600 hover:bg-amber-50
+          ${isOpen ? 'text-amber-600 bg-amber-50' : ''}
+        `}
         aria-expanded={isOpen}
       >
         <span>{title}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Dropdown Panel */}
+      {/* ✅ DROPDOWN PANEL - BADA */}
       {isOpen && (
-        /* ⚡ Changed left-0 to left-1/2 -translate-x-1/2 for perfect center alignment under the link */
-        <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${widthClass} max-w-[92vw] sm:max-w-[85vw] md:max-w-[95vw] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200`}>
-          <div className="p-6 lg:p-8">
-            <div className={`grid ${gridCols} gap-6 lg:gap-8`}>
+        <div className={`
+          absolute top-full left-1/2 -translate-x-1/2 mt-3 
+          ${widthClass} 
+          max-w-[95vw] 
+          bg-white rounded-3xl shadow-2xl border border-gray-100 
+          overflow-hidden z-50 
+          animate-in fade-in slide-in-from-top-2 duration-200
+        `}>
+          <div className="p-8 lg:p-10">
+            <div className={`grid ${gridCols} gap-8 lg:gap-10`}>
               {columns.map((column, colIdx) => (
-                <div key={column._key || colIdx} className="space-y-4">
-                  {/* Column Header */}
-                  <h4 className="text-xs font-bold text-black uppercase tracking-wider pb-2 border-b border-gray-100">
+                <div key={column._key || colIdx} className="space-y-5">
+                  {/* ✅ COLUMN HEADER - BADA */}
+                  <h4 className="text-sm font-extrabold text-black uppercase tracking-widest pb-3 border-b-2 border-amber-200">
                     {column.title}
                   </h4>
                   
-                  {/* Links List */}
-                  <ul className="space-y-1">
+                  {/* ✅ LINKS LIST - BADA GAP */}
+                  <ul className="space-y-2">
                     {(column.links || []).map((link, i) => {
                       const targetUrl = link.url && link.url.trim() !== '' ? link.url : '#';
                       
@@ -101,27 +117,27 @@ export default function MegaMenu({ config }: MegaMenuProps) {
                             href={targetUrl}
                             prefetch={targetUrl !== '#'}
                             onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-3 p-1.5 -mx-1.5 rounded-xl hover:bg-gray-50 group/link transition-all duration-200"
+                            className="flex items-center gap-4 p-2 -mx-2 rounded-xl hover:bg-gray-50 group/link transition-all duration-200"
                           >
-                            {/* Image Container with Fallback Badge */}
+                            {/* ✅ IMAGE CONTAINER - BADA */}
                             {showImages && (
-                              <div className="w-9 h-9 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center border border-gray-50 relative">
+                              <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 flex items-center justify-center border-2 border-gray-100 relative group-hover/link:border-amber-200 transition-colors">
                                 {link.imageUrl ? (
                                   <Image
                                     src={link.imageUrl}
                                     alt=""
                                     fill
-                                    sizes="36px"
-                                    className="object-cover group-hover/link:scale-105 transition-transform duration-300"
+                                    sizes="48px"
+                                    className="object-cover group-hover/link:scale-110 transition-transform duration-300"
                                   />
                                 ) : (
-                                  <Package className="w-4 h-4 text-gray-400 opacity-60" />
+                                  <Package className="w-5 h-5 text-gray-400 opacity-60" />
                                 )}
                               </div>
                             )}
                             
-                            {/* Link Label */}
-                            <span className="text-sm text-gray-700 font-medium group-hover/link:text-amber-600 transition-colors duration-150">
+                            {/* ✅ LINK LABEL - BADA & BOLD */}
+                            <span className="text-base text-gray-800 font-semibold group-hover/link:text-amber-600 transition-colors duration-150">
                               {link.label}
                             </span>
                           </Link>
@@ -134,15 +150,15 @@ export default function MegaMenu({ config }: MegaMenuProps) {
             </div>
           </div>
 
-          {/* Bottom Footer Banner */}
+          {/* ✅ BOTTOM FOOTER - BADA */}
           {viewAllUrl && (
             <Link
               href={viewAllUrl}
               onClick={() => setIsOpen(false)}
-              className="flex items-center justify-center gap-2 px-6 py-4 bg-gray-50 text-sm font-bold text-gray-900 hover:text-amber-600 hover:bg-amber-50/50 transition-all border-t border-gray-100 group/btn"
+              className="flex items-center justify-center gap-3 px-8 py-5 bg-gray-50 text-base font-extrabold text-gray-900 hover:text-amber-600 hover:bg-amber-50/50 transition-all border-t-2 border-gray-100 group/btn"
             >
               <span>{viewAllText}</span>
-              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+              <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1.5 transition-transform" />
             </Link>
           )}
         </div>
