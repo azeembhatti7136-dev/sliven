@@ -1,35 +1,26 @@
-// src/components/ProductCard.tsx
-'use client';  // ðŸ‘ˆ ADD THIS!
-
+'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { Package } from 'lucide-react';
 import QuoteButton from './QuoteButton';
-function getImageUrl(image: any, width: number = 800, height?: number): string {
-  if (!image?.asset?._ref) return '';
-  const ref = image.asset._ref;
-  const parts = ref.split('-');
-  const id = parts[1];
-  const fmt = parts[3] || 'jpg';
-  const h = height || Math.round(width * 0.75);
-  return `https://cdn.sanity.io/images/d2zeiu5j/production/${id}-${width}x${h}.${fmt}`;
-}
-
 
 export default function ProductCard({ product, compact = false }: { product: any; compact?: boolean }) {
   const isQuoteProduct = product.quoteSettings?.enableQuote || false;
-  const imageUrl = product.imageUrl || '';
+  
+  // Yahan humne query se milne wala direct URL utha liya
+  const imageUrl = product.images?.[0] || '';
 
   return (
     <div className={`group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col ${compact ? 'w-[380px] h-[450px]' : ''}`}>
-      <Link href={`/products/${product.slug.current}`} className={`relative overflow-hidden bg-gray-50 ${compact ? 'aspect-square max-h-[380px]' : 'aspect-square'}`}>
+      <Link href={`/products/${product.slug?.current}`} className={`relative overflow-hidden bg-gray-50 ${compact ? 'aspect-square max-h-[380px]' : 'aspect-square'}`}>
         {imageUrl ? (
           <Image 
-            src={imageUrl} // ðŸ‘ˆ Direct URL
+            src={imageUrl}
             alt={product.title} 
             fill 
-            sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw)"} 
+            unoptimized 
+            sizes={compact ? "200px" : "(max-width: 640px) 100vw, 25vw"} 
             className="object-cover group-hover:scale-105 transition-transform duration-500" 
           />
         ) : (
@@ -37,6 +28,7 @@ export default function ProductCard({ product, compact = false }: { product: any
             <Package className={compact ? "w-8 h-8" : "w-12 h-12"} />
           </div>
         )}
+        
         {product.stock === 0 && (
           <div className={`absolute top-2 left-2 bg-gray-900 text-white font-bold rounded-full ${compact ? 'text-[10px] px-2 py-0.5' : 'text-xs px-3 py-1'}`}>Out of Stock</div>
         )}
@@ -51,7 +43,7 @@ export default function ProductCard({ product, compact = false }: { product: any
             {product.collection.title}
           </Link>
         )}
-        <Link href={`/products/${product.slug.current}`}>
+        <Link href={`/products/${product.slug?.current}`}>
           <h3 className={`font-semibold text-gray-900 hover:text-amber-600 ${compact ? 'text-m mt-0.5 line-clamp-2' : 'mt-1 line-clamp-2'}`}>
             {product.title}
           </h3>
@@ -66,7 +58,7 @@ export default function ProductCard({ product, compact = false }: { product: any
             <QuoteButton
               productId={product._id}
               productName={product.title}
-              productImage={product.images?.[0]}
+              productImage={imageUrl}
               productSku={product.sku}
               productCollection={product.collection?.title}
               buttonText={product.quoteSettings?.quoteButtonText || 'Get Quote'}
@@ -78,4 +70,3 @@ export default function ProductCard({ product, compact = false }: { product: any
     </div>
   );
 }
-

@@ -1,4 +1,3 @@
-// src/app/search/page.tsx
 import { client } from '@/lib/sanityClient.server';
 import ProductCard from '@/components/ProductCard';
 
@@ -8,12 +7,12 @@ async function searchProducts(query: string) {
   if (!query) return [];
   return client.fetch(
     `*[_type == "simpleProduct" && (title match $query || tags[] match $query || features[] match $query)] {
-      _id, title, slug, sku,
-      "images": images[] { _key, asset->, alt },
+      _id, title, slug, sku, price, compareAtPrice,
+      "images": images[].asset->url, 
       "collection": collection->{_id, title, slug},
-      price, compareAtPrice, features, stock, tags, quoteSettings
+      features, stock, tags, quoteSettings
     }`,
-    { query: `*${query}*` } as any
+    { query: `*${query}*` }
   );
 }
 
@@ -27,6 +26,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Search Results</h1>
         <p className="text-gray-500 mb-8">{q ? `Showing results for "${q}"` : 'Enter a search term'}</p>
+        
         {products.length === 0 ? (
           <div className="text-center py-20"><p className="text-gray-400">No products found.</p></div>
         ) : (
