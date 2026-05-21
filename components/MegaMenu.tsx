@@ -75,16 +75,11 @@ export default function MegaMenu({ config }: MegaMenuProps) {
     <div ref={menuRef} className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {/* ✅ TRIGGER BUTTON - BADA & BOLD */}
       <button 
-        className={`
-          px-5 py-2.5 text-lg font-bold rounded-xl transition-all duration-200 
-          flex items-center gap-2 focus:outline-none
-          text-gray-900 hover:text-amber-600 hover:bg-amber-50
-          ${isOpen ? 'text-amber-600 bg-amber-50' : ''}
-        `}
+        className={`px-4 py-2 text-lg font-bold text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all flex items-center gap-1 focus:outline-none ${isOpen ? 'text-white bg-gray-800' : ''}`}
         aria-expanded={isOpen}
       >
         <span>{title}</span>
-        <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* ✅ DROPDOWN PANEL - BADA */}
