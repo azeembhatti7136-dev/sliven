@@ -8,7 +8,7 @@ import QuoteButton from './QuoteButton';
 export default function ProductCard({ product, compact = false }: { product: any; compact?: boolean }) {
   const isQuoteProduct = product.quoteSettings?.enableQuote || false;
   
-  // ✅ Query se "imageUrl" field aa raha hai ab
+  // ✅ Query se "imageUrl" aa raha hai - seedha URL string
   const imageUrl = product.imageUrl || '';
 
   return (

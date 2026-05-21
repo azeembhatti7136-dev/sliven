@@ -162,31 +162,27 @@ async function getHomePage() {
           backgroundColor
         },
         _type == "popularProducts" => {
-          sectionLabel,
-          title,
-          subtitle,
-          products[]-> {
-            _id,
-            title,
-            name,
-            slug,
-            price,
-            compareAtPrice,
-            images[] {
-              _key,
-              asset,
-              alt
-            },
-            "image": images[0],
-            features,
-            stock,
-            tags,
-            quoteSettings
-          },
-          showViewAll,
-          viewAllText,
-          backgroundColor
-        },
+  sectionLabel,
+  title,
+  subtitle,
+  products[]-> {
+    _id,
+    title,
+    name,
+    slug,
+    price,
+    compareAtPrice,
+    features,
+    stock,
+    tags,
+    quoteSettings,
+    // ✅ FIX: Direct URL string - pehle image hi lo
+    "imageUrl": images[0].asset->url
+  },
+  showViewAll,
+  viewAllText,
+  backgroundColor
+},
         _type == "contentBox" => {
           sectionLabel,
           title,
