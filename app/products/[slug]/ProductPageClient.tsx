@@ -39,6 +39,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
   const imageRef = useRef<HTMLDivElement>(null);
   const thumbnailScrollRef = useRef<HTMLDivElement>(null);
+  const thumbnailContainerRef = useRef<HTMLDivElement>(null);
 
   const allImages = product.images || [];
   const specs = product.specifications || {};
@@ -54,6 +55,23 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
       }
     });
   }, [allImages]);
+
+  // 🔥 FORCE CONTAINER WIDTH ON MOBILE/TABLET
+  useEffect(() => {
+    const setContainerWidth = () => {
+      if (thumbnailContainerRef.current) {
+        const parentWidth = thumbnailContainerRef.current.parentElement?.offsetWidth;
+        if (parentWidth) {
+          thumbnailContainerRef.current.style.width = `${parentWidth}px`;
+          thumbnailContainerRef.current.style.maxWidth = `${parentWidth}px`;
+        }
+      }
+    };
+    
+    setContainerWidth();
+    window.addEventListener('resize', setContainerWidth);
+    return () => window.removeEventListener('resize', setContainerWidth);
+  }, []);
 
   const goToPrevious = () => {
     const newIndex = currentIndex === 0 ? allImages.length - 1 : currentIndex - 1;
@@ -72,10 +90,15 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
     if (thumbnailScrollRef.current) {
       const thumbnails = thumbnailScrollRef.current.children;
       if (thumbnails[index]) {
-        thumbnails[index].scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
+        const container = thumbnailScrollRef.current;
+        const thumbnail = thumbnails[index] as HTMLElement;
+        const containerWidth = container.offsetWidth;
+        const thumbnailLeft = thumbnail.offsetLeft;
+        const thumbnailWidth = thumbnail.offsetWidth;
+        
+        container.scrollTo({
+          left: thumbnailLeft - containerWidth / 2 + thumbnailWidth / 2,
+          behavior: 'smooth'
         });
       }
     }
@@ -145,7 +168,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
       <div className="max-w-7xl mx-auto px-4 py-8 lg:py-12">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
           {/* Image Gallery */}
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0"> {/* 👈 min-w-0 prevents overflow */}
             {/* Main Image */}
             <div 
               ref={imageRef} 
@@ -172,7 +195,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                   )}
                   {isHovering && isCurrentLoaded && (
                     <div 
-                      className="absolute pointer-events-none z-50" 
+                      className="absolute pointer-events-none z-50 hidden lg:block" 
                       style={{
                         width: '230px',
                         height: '230px',
@@ -214,17 +237,24 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
               )}
             </div>
             
-            {/* ✅ FIXED: Thumbnails - Horizontal Scroll with Fixed Width */}
+            {/* 🔥 FORCE FIX: Thumbnails Container */}
             {allImages.length > 1 && (
-              <div className="w-full overflow-hidden">
+              <div 
+                ref={thumbnailContainerRef}
+                className="overflow-hidden"
+                style={{ width: '100%', maxWidth: '100%' }}
+              >
                 <div 
                   ref={thumbnailScrollRef}
-                  className="flex gap-2 overflow-x-auto pb-2 w-full snap-x snap-mandatory"
+                  className="flex gap-2 overflow-x-auto py-2 snap-x snap-mandatory"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
+                    overflowX: 'auto',
                     WebkitOverflowScrolling: 'touch',
                     whiteSpace: 'nowrap',
+                    display: 'flex',
+                    flexWrap: 'nowrap',
                   }}
                 >
                   {allImages.map((image: any, index: number) => (
@@ -232,18 +262,19 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                       key={image._key || index} 
                       onClick={() => handleThumbnailClick(index)} 
                       className={`
-                        relative flex-shrink-0 rounded-xl overflow-hidden 
+                        flex-shrink-0 rounded-xl overflow-hidden 
                         transition-all duration-200 snap-center
-                        w-[64px] h-[64px]
-                        sm:w-20 sm:h-20           
+                        w-[60px] h-[60px]
+                        sm:w-[72px] sm:h-[72px]           
                         border-2 
                         ${index === currentIndex 
-                          ? 'border-amber-500 shadow-md scale-105' 
+                          ? 'border-amber-500 shadow-md' 
                           : 'border-gray-200 hover:border-gray-300'
                         }
                       `}
                       style={{
                         flex: '0 0 auto',
+                        minWidth: '60px',
                       }}
                     >
                       <Image 
@@ -251,7 +282,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                         alt={image.alt || `Thumbnail ${index + 1}`} 
                         fill 
                         className="object-cover" 
-                        sizes="(max-width: 640px) 64px, 80px" 
+                        sizes="(max-width: 640px) 60px, 72px" 
                         loading="eager"
                         unoptimized
                       />
@@ -259,10 +290,10 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                   ))}
                 </div>
                 
-                {/* Dot Indicators - visible when > 5 images on mobile */}
+                {/* Dot Indicators */}
                 {allImages.length > 5 && (
-                  <div className="flex justify-center gap-1.5 mt-2 sm:hidden">
-                    {allImages.map((_: any, idx: number) => (
+                  <div className="flex justify-center gap-1.5 mt-2 lg:hidden">
+                    {Array.from({ length: Math.min(allImages.length, 10) }).map((_, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleThumbnailClick(idx)}
@@ -373,12 +404,11 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
       
       {/* CSS for hiding scrollbar */}
       <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
+        div[ref]::-webkit-scrollbar {
           display: none;
         }
-        .scrollbar-hide {
+        * {
           -ms-overflow-style: none;
-          scrollbar-width: none;
         }
       `}</style>
     </main>
