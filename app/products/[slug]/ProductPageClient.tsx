@@ -145,7 +145,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
       <div className="max-w-7xl mx-auto px-4 py-8 lg:py-12">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
           {/* Image Gallery */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 min-w-0">
             {/* Main Image */}
             <div 
               ref={imageRef} 
@@ -214,9 +214,16 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
               )}
             </div>
             
-            {/* ✅ SIMPLE & WORKING THUMBNAILS */}
+            {/* ✅ THUMBNAILS - Finally Fixed with 100% working approach */}
             {allImages.length > 1 && (
-              <div className="w-full">
+              <div 
+                style={{ 
+                  width: '100%', 
+                  maxWidth: '100%', 
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}
+              >
                 <div 
                   ref={thumbnailScrollRef}
                   style={{
@@ -226,41 +233,39 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                     gap: '8px',
                     overflowX: 'auto',
                     overflowY: 'hidden',
-                    paddingBottom: '8px',
+                    paddingBottom: '4px',
                     width: '100%',
-                    maxWidth: '100%',
+                    WebkitOverflowScrolling: 'touch',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
-                    WebkitOverflowScrolling: 'touch',
                   }}
                   className="scrollbar-hide"
                 >
                   {allImages.map((image: any, index: number) => (
                     <button 
                       key={image._key || index} 
-                      onClick={() => handleThumbnailClick(index)} 
+                      onClick={() => handleThumbnailClick(index)}
                       style={{
-                        flex: '0 0 64px',
+                        flex: '0 0 auto',
                         width: '64px',
                         height: '64px',
-                        minWidth: '64px',
-                        maxWidth: '64px',
                         position: 'relative',
                         borderRadius: '12px',
                         overflow: 'hidden',
                         border: index === currentIndex ? '2px solid #f59e0b' : '2px solid #e5e7eb',
-                        boxShadow: index === currentIndex ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none',
+                        boxShadow: index === currentIndex ? '0 0 0 2px rgba(245, 158, 11, 0.3)' : 'none',
                         transform: index === currentIndex ? 'scale(1.05)' : 'scale(1)',
-                        transition: 'all 0.2s',
+                        transition: 'all 0.2s ease',
                         cursor: 'pointer',
+                        padding: 0,
                       }}
                     >
                       <Image 
                         src={`${image.url}?w=160&h=160&auto=format`}
                         alt={image.alt || `Thumbnail ${index + 1}`} 
                         fill 
+                        sizes="64px"
                         style={{ objectFit: 'cover' }}
-                        sizes="64px" 
                         loading="eager"
                         unoptimized
                       />
@@ -268,21 +273,27 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                   ))}
                 </div>
                 
-                {/* Dot Indicators for mobile when many images */}
+                {/* Dot indicators for many images */}
                 {allImages.length > 5 && (
-                  <div className="flex justify-center gap-1.5 mt-2">
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    gap: '6px', 
+                    marginTop: '8px' 
+                  }}>
                     {allImages.map((_: any, idx: number) => (
                       <button
                         key={idx}
                         onClick={() => handleThumbnailClick(idx)}
                         style={{
                           height: '6px',
-                          borderRadius: '9999px',
-                          transition: 'all 0.2s',
+                          borderRadius: '999px',
+                          transition: 'all 0.2s ease',
                           width: idx === currentIndex ? '16px' : '6px',
                           backgroundColor: idx === currentIndex ? '#f59e0b' : '#d1d5db',
                           border: 'none',
                           cursor: 'pointer',
+                          padding: 0,
                         }}
                         aria-label={`Go to image ${idx + 1}`}
                       />
