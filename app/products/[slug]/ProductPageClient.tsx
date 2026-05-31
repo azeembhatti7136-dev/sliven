@@ -145,7 +145,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
       <div className="max-w-7xl mx-auto px-4 py-8 lg:py-12">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
           {/* Image Gallery */}
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {/* Main Image */}
             <div 
               ref={imageRef} 
@@ -214,74 +214,76 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
               )}
             </div>
             
-            {/* ✅ COMPLETELY FIXED: Thumbnails with absolute width control */}
+            {/* ✅ SIMPLE & WORKING THUMBNAILS */}
             {allImages.length > 1 && (
-              <div className="relative w-full" style={{ overflow: 'hidden' }}>
-                {/* Gradient overlays for scroll indication */}
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
-                
+              <div className="w-full">
                 <div 
                   ref={thumbnailScrollRef}
-                  className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
                   style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'nowrap',
+                    gap: '8px',
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    paddingBottom: '8px',
+                    width: '100%',
+                    maxWidth: '100%',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
-                    display: 'flex',
-                    flexWrap: 'nowrap',
-                    width: '100%',
                   }}
+                  className="scrollbar-hide"
                 >
                   {allImages.map((image: any, index: number) => (
-                    <div
-                      key={image._key || index}
-                      className="relative flex-shrink-0 snap-center"
+                    <button 
+                      key={image._key || index} 
+                      onClick={() => handleThumbnailClick(index)} 
                       style={{
-                        width: '72px',
-                        height: '72px',
-                        minWidth: '72px',
-                        maxWidth: '72px',
+                        flex: '0 0 64px',
+                        width: '64px',
+                        height: '64px',
+                        minWidth: '64px',
+                        maxWidth: '64px',
+                        position: 'relative',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        border: index === currentIndex ? '2px solid #f59e0b' : '2px solid #e5e7eb',
+                        boxShadow: index === currentIndex ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none',
+                        transform: index === currentIndex ? 'scale(1.05)' : 'scale(1)',
+                        transition: 'all 0.2s',
+                        cursor: 'pointer',
                       }}
                     >
-                      <button 
-                        onClick={() => handleThumbnailClick(index)} 
-                        className={`
-                          w-full h-full rounded-xl overflow-hidden 
-                          transition-all duration-200
-                          border-2 
-                          ${index === currentIndex 
-                            ? 'border-amber-500 shadow-md scale-105' 
-                            : 'border-gray-200 hover:border-gray-300'
-                          }
-                        `}
-                      >
-                        <Image 
-                          src={`${image.url}?w=160&h=160&auto=format`}
-                          alt={image.alt || `Thumbnail ${index + 1}`} 
-                          fill 
-                          className="object-cover" 
-                          sizes="72px" 
-                          loading="eager"
-                          unoptimized
-                        />
-                      </button>
-                    </div>
+                      <Image 
+                        src={`${image.url}?w=160&h=160&auto=format`}
+                        alt={image.alt || `Thumbnail ${index + 1}`} 
+                        fill 
+                        style={{ objectFit: 'cover' }}
+                        sizes="64px" 
+                        loading="eager"
+                        unoptimized
+                      />
+                    </button>
                   ))}
                 </div>
                 
-                {/* Dot Indicators - visible when > 5 images */}
+                {/* Dot Indicators for mobile when many images */}
                 {allImages.length > 5 && (
-                  <div className="flex justify-center gap-1.5 mt-3">
+                  <div className="flex justify-center gap-1.5 mt-2">
                     {allImages.map((_: any, idx: number) => (
                       <button
                         key={idx}
                         onClick={() => handleThumbnailClick(idx)}
-                        className={`h-1.5 rounded-full transition-all duration-200 ${
-                          idx === currentIndex 
-                            ? 'bg-amber-500 w-4' 
-                            : 'bg-gray-300 hover:bg-gray-400 w-1.5'
-                        }`}
+                        style={{
+                          height: '6px',
+                          borderRadius: '9999px',
+                          transition: 'all 0.2s',
+                          width: idx === currentIndex ? '16px' : '6px',
+                          backgroundColor: idx === currentIndex ? '#f59e0b' : '#d1d5db',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
                         aria-label={`Go to image ${idx + 1}`}
                       />
                     ))}
