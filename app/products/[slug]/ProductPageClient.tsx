@@ -216,15 +216,14 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
             
             {/* ✅ FIXED: Thumbnails - Horizontal Scroll with Fixed Width */}
             {allImages.length > 1 && (
-              <div className="w-full overflow-hidden">
+              <div className="relative w-full">
                 <div 
                   ref={thumbnailScrollRef}
-                  className="flex gap-2 overflow-x-auto pb-2 w-full snap-x snap-mandatory"
+                  className="flex gap-2 overflow-x-auto pb-2 w-full snap-x snap-mandatory scrollbar-hide"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
-                    whiteSpace: 'nowrap',
                   }}
                 >
                   {allImages.map((image: any, index: number) => (
@@ -242,9 +241,6 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                           : 'border-gray-200 hover:border-gray-300'
                         }
                       `}
-                      style={{
-                        flex: '0 0 auto',
-                      }}
                     >
                       <Image 
                         src={`${image.url}?w=160&h=160&auto=format`}
