@@ -39,6 +39,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
   const imageRef = useRef<HTMLDivElement>(null);
   const thumbnailScrollRef = useRef<HTMLDivElement>(null);
+  const thumbnailContainerRef = useRef<HTMLDivElement>(null);
 
   const allImages = product.images || [];
   const specs = product.specifications || {};
@@ -214,16 +215,25 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
               )}
             </div>
             
-            {/* ✅ FIXED: Thumbnails - Horizontal Scroll with Fixed Width */}
+            {/* ✅ FIXED: Thumbnails with STRICT width control */}
             {allImages.length > 1 && (
-              <div className="relative w-full">
+              <div 
+                ref={thumbnailContainerRef}
+                className="w-full max-w-full overflow-hidden"
+                style={{ 
+                  width: '100%',
+                  maxWidth: '100%' 
+                }}
+              >
                 <div 
                   ref={thumbnailScrollRef}
-                  className="flex gap-2 overflow-x-auto pb-2 w-full snap-x snap-mandatory scrollbar-hide"
+                  className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
+                    width: '100%',
+                    maxWidth: '100%',
                   }}
                 >
                   {allImages.map((image: any, index: number) => (
@@ -231,23 +241,28 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                       key={image._key || index} 
                       onClick={() => handleThumbnailClick(index)} 
                       className={`
-                        relative flex-shrink-0 rounded-xl overflow-hidden 
+                        flex-shrink-0 rounded-xl overflow-hidden 
                         transition-all duration-200 snap-center
-                        w-[64px] h-[64px]
-                        sm:w-20 sm:h-20           
                         border-2 
                         ${index === currentIndex 
                           ? 'border-amber-500 shadow-md scale-105' 
                           : 'border-gray-200 hover:border-gray-300'
                         }
                       `}
+                      style={{
+                        width: '64px',
+                        height: '64px',
+                        minWidth: '64px',
+                        maxWidth: '64px',
+                        flexBasis: '64px',
+                      }}
                     >
                       <Image 
                         src={`${image.url}?w=160&h=160&auto=format`}
                         alt={image.alt || `Thumbnail ${index + 1}`} 
                         fill 
                         className="object-cover" 
-                        sizes="(max-width: 640px) 64px, 80px" 
+                        sizes="64px" 
                         loading="eager"
                         unoptimized
                       />
