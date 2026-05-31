@@ -44,7 +44,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
   const specs = product.specifications || {};
   const collections = product.collections || [];
 
-  // ✅ Preload images using direct URLs
+  // Preload images using direct URLs
   useEffect(() => {
     allImages.forEach((img: any, index: number) => {
       if (img.url) {
@@ -55,14 +55,20 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
     });
   }, [allImages]);
 
-  const goToPrevious = () => setCurrentIndex((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
-  const goToNext = () => setCurrentIndex((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
-  
-  // ✅ Auto-scroll thumbnail into view when currentIndex changes
-  const handleThumbnailClick = (index: number) => {
-    setCurrentIndex(index);
-    
-    // Auto-scroll the thumbnail into view (mobile smooth scroll)
+  const goToPrevious = () => {
+    const newIndex = currentIndex === 0 ? allImages.length - 1 : currentIndex - 1;
+    setCurrentIndex(newIndex);
+    scrollThumbnailIntoView(newIndex);
+  };
+
+  const goToNext = () => {
+    const newIndex = currentIndex === allImages.length - 1 ? 0 : currentIndex + 1;
+    setCurrentIndex(newIndex);
+    scrollThumbnailIntoView(newIndex);
+  };
+
+  // Auto-scroll thumbnail into view
+  const scrollThumbnailIntoView = (index: number) => {
     if (thumbnailScrollRef.current) {
       const thumbnails = thumbnailScrollRef.current.children;
       if (thumbnails[index]) {
@@ -73,6 +79,11 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
         });
       }
     }
+  };
+
+  const handleThumbnailClick = (index: number) => {
+    setCurrentIndex(index);
+    scrollThumbnailIntoView(index);
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -135,6 +146,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
           {/* Image Gallery */}
           <div className="space-y-4">
+            {/* Main Image */}
             <div 
               ref={imageRef} 
               className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 group" 
@@ -202,17 +214,17 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
               )}
             </div>
             
-            {/* ✅ FIXED: Mobile Horizontal Scroll Thumbnails */}
+            {/* ✅ FIXED: Thumbnails - Horizontal Scroll with Fixed Width */}
             {allImages.length > 1 && (
-              <div className="relative">
-                {/* Scroll Container - Fixed Width, Hidden Scrollbar */}
+              <div className="w-full overflow-hidden">
                 <div 
                   ref={thumbnailScrollRef}
-                  className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 px-0.5 -mx-0.5 snap-x snap-mandatory"
+                  className="flex gap-2 overflow-x-auto pb-2 w-full snap-x snap-mandatory"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
-                    WebkitOverflowScrolling: 'touch'
+                    WebkitOverflowScrolling: 'touch',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {allImages.map((image: any, index: number) => (
@@ -222,21 +234,24 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                       className={`
                         relative flex-shrink-0 rounded-xl overflow-hidden 
                         transition-all duration-200 snap-center
-                        w-[72px] h-[72px]        /* ✅ Fixed size for mobile */
-                        sm:w-20 sm:h-20            /* ✅ Slightly bigger on tablet+ */
+                        w-[64px] h-[64px]
+                        sm:w-20 sm:h-20           
                         border-2 
                         ${index === currentIndex 
                           ? 'border-amber-500 shadow-md scale-105' 
                           : 'border-gray-200 hover:border-gray-300'
                         }
                       `}
+                      style={{
+                        flex: '0 0 auto',
+                      }}
                     >
                       <Image 
                         src={`${image.url}?w=160&h=160&auto=format`}
                         alt={image.alt || `Thumbnail ${index + 1}`} 
                         fill 
                         className="object-cover" 
-                        sizes="(max-width: 640px) 72px, 80px" 
+                        sizes="(max-width: 640px) 64px, 80px" 
                         loading="eager"
                         unoptimized
                       />
@@ -244,17 +259,17 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                   ))}
                 </div>
                 
-                {/* ✅ Scroll Indicator Dots (Mobile only - visible when > 5 images) */}
+                {/* Dot Indicators - visible when > 5 images on mobile */}
                 {allImages.length > 5 && (
                   <div className="flex justify-center gap-1.5 mt-2 sm:hidden">
                     {allImages.map((_: any, idx: number) => (
                       <button
                         key={idx}
                         onClick={() => handleThumbnailClick(idx)}
-                        className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                        className={`h-1.5 rounded-full transition-all duration-200 ${
                           idx === currentIndex 
                             ? 'bg-amber-500 w-4' 
-                            : 'bg-gray-300 hover:bg-gray-400'
+                            : 'bg-gray-300 hover:bg-gray-400 w-1.5'
                         }`}
                         aria-label={`Go to image ${idx + 1}`}
                       />
@@ -356,7 +371,7 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
         </div>
       </div>
       
-      {/* ✅ Add CSS for hiding scrollbar */}
+      {/* CSS for hiding scrollbar */}
       <style jsx global>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
