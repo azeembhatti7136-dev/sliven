@@ -39,7 +39,6 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
   const imageRef = useRef<HTMLDivElement>(null);
   const thumbnailScrollRef = useRef<HTMLDivElement>(null);
-  const thumbnailContainerRef = useRef<HTMLDivElement>(null);
 
   const allImages = product.images || [];
   const specs = product.specifications || {};
@@ -215,16 +214,13 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
               )}
             </div>
             
-            {/* ✅ FIXED: Thumbnails with STRICT width control */}
+            {/* ✅ COMPLETELY FIXED: Thumbnails with absolute width control */}
             {allImages.length > 1 && (
-              <div 
-                ref={thumbnailContainerRef}
-                className="w-full max-w-full overflow-hidden"
-                style={{ 
-                  width: '100%',
-                  maxWidth: '100%' 
-                }}
-              >
+              <div className="relative w-full" style={{ overflow: 'hidden' }}>
+                {/* Gradient overlays for scroll indication */}
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+                
                 <div 
                   ref={thumbnailScrollRef}
                   className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
@@ -232,47 +228,51 @@ export default function ProductPageClient({ product, relatedProducts }: { produc
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
+                    display: 'flex',
+                    flexWrap: 'nowrap',
                     width: '100%',
-                    maxWidth: '100%',
                   }}
                 >
                   {allImages.map((image: any, index: number) => (
-                    <button 
-                      key={image._key || index} 
-                      onClick={() => handleThumbnailClick(index)} 
-                      className={`
-                        flex-shrink-0 rounded-xl overflow-hidden 
-                        transition-all duration-200 snap-center
-                        border-2 
-                        ${index === currentIndex 
-                          ? 'border-amber-500 shadow-md scale-105' 
-                          : 'border-gray-200 hover:border-gray-300'
-                        }
-                      `}
+                    <div
+                      key={image._key || index}
+                      className="relative flex-shrink-0 snap-center"
                       style={{
-                        width: '64px',
-                        height: '64px',
-                        minWidth: '64px',
-                        maxWidth: '64px',
-                        flexBasis: '64px',
+                        width: '72px',
+                        height: '72px',
+                        minWidth: '72px',
+                        maxWidth: '72px',
                       }}
                     >
-                      <Image 
-                        src={`${image.url}?w=160&h=160&auto=format`}
-                        alt={image.alt || `Thumbnail ${index + 1}`} 
-                        fill 
-                        className="object-cover" 
-                        sizes="64px" 
-                        loading="eager"
-                        unoptimized
-                      />
-                    </button>
+                      <button 
+                        onClick={() => handleThumbnailClick(index)} 
+                        className={`
+                          w-full h-full rounded-xl overflow-hidden 
+                          transition-all duration-200
+                          border-2 
+                          ${index === currentIndex 
+                            ? 'border-amber-500 shadow-md scale-105' 
+                            : 'border-gray-200 hover:border-gray-300'
+                          }
+                        `}
+                      >
+                        <Image 
+                          src={`${image.url}?w=160&h=160&auto=format`}
+                          alt={image.alt || `Thumbnail ${index + 1}`} 
+                          fill 
+                          className="object-cover" 
+                          sizes="72px" 
+                          loading="eager"
+                          unoptimized
+                        />
+                      </button>
+                    </div>
                   ))}
                 </div>
                 
-                {/* Dot Indicators - visible when > 5 images on mobile */}
+                {/* Dot Indicators - visible when > 5 images */}
                 {allImages.length > 5 && (
-                  <div className="flex justify-center gap-1.5 mt-2 sm:hidden">
+                  <div className="flex justify-center gap-1.5 mt-3">
                     {allImages.map((_: any, idx: number) => (
                       <button
                         key={idx}
